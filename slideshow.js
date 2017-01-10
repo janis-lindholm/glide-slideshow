@@ -29,29 +29,32 @@ glide.calcImgPosAndDims = function (img) {
 
     var height, width, x, y;
 
-    if (img != null) {
-        var h = img.naturalHeight;
-        var w = img.naturalWidth;
-
-        var wh = window.innerHeight;
-        var ww = window.innerWidth;
-
-        if (h <= wh && w <= ww) {          // image fits
-            height = h;
-            width = w;
-        } else {                           // scale
-            var widthScale = ww / w;
-            var heightScale = wh / h;
-            var scale = Math.min(widthScale, heightScale);
-            width = Math.round(w * scale);
-            height = Math.round(h * scale);
-        }
-
-        x = (ww - width) / 2;
-        y = (wh - height) / 2;
+    if (img != null) {  // new image
+        glide.naturalHeight = img.naturalHeight;
+        glide.naturalWidth = img.naturalWidth;
     }
 
-    return {"width": width, "height": height, "x": x, "y": y};
+    var wh = window.innerHeight;
+    var ww = window.innerWidth;
+
+    if (glide.naturalHeight <= wh && glide.naturalWidth <= ww) {  // image fits
+        height = glide.naturalHeight;
+        width = glide.naturalWidth;
+    } else {    // scale
+        var widthScale = ww / glide.naturalWidth;
+        var heightScale = wh / glide.naturalHeight;
+        var scale = Math.min(widthScale, heightScale);
+        width = Math.round(glide.naturalWidth * scale);
+        height = Math.round(glide.naturalHeight * scale);
+    }
+
+    x = (ww - width) / 2;
+    y = (wh - height) / 2;
+
+    return { "width": width,
+             "height": height,
+             "x": x,
+             "y": y };
 };
 
 glide.loadPic = function (nextPicSpec, pics) {
@@ -148,12 +151,28 @@ document.onkeypress = function (e) {
   }
 };
 
+// On window resize:
+window.onresize = function(e) {
+
+    // resize canvas
+    glide.svg.attr("width", window.innerWidth)
+             .attr("height", window.innerHeight);
+
+    // resize pic
+    var posAndDims = glide.calcImgPosAndDims();
+    glide.svg.selectAll("image")
+           .attr("width", posAndDims.width)
+           .attr("height", posAndDims.height)
+           .attr("x", posAndDims.x)
+           .attr("y", posAndDims.y);
+};
+
 // On page load:
 d3.json(glide.picsJson, function(data) {
     glide.dataset = data;
     glide.max = glide.dataset.pics.length - 1;
     glide.i = -1;
-    glide.svg = null;
+    //glide.svg = null;
     glide.setupCanvas();
     glide.nextSlide();
 });
