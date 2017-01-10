@@ -80,6 +80,8 @@ glide.loadPic = function (nextPicSpec, pics) {
         var posAndDims = glide.calcImgPosAndDims(img);
         pics.enter()
            .append("image")
+           .transition()
+           .duration(glide.duration)
            .attr("xlink:href", function(d) { return d.src })
            .attr("id", function(d) { return "pic_" + d.key })
            .attr("width", posAndDims.width)
@@ -90,18 +92,13 @@ glide.loadPic = function (nextPicSpec, pics) {
     img.src = nextPicSpec[0].src;
 }
 
-glide.createSlide = function () {
+glide.setupCanvas = function () {
     glide.svg = d3.select("body")
                   .append("svg")
                   .attr("width", window.innerWidth)
                   .attr("height", window.innerHeight)
                   .attr("id", "canvas")
                   .attr("class", "canvas");
-
-    var nextPicSpec = glide.nextPic();
-    var pics = glide.svg.selectAll("image")
-                        .data(nextPicSpec, glide.key);
-    glide.loadPic(nextPicSpec, pics);
 };
 
 glide.nextSlide = function () {
@@ -128,4 +125,5 @@ d3.select("body").on("click", function() {
 });
 
 // On page load:
-glide.createSlide();
+glide.setupCanvas();
+glide.nextSlide();
