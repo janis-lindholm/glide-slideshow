@@ -43,10 +43,10 @@ var key = function (d) {
     return d.key;
 };
 
-var fixImgDims = function (imgClass) {
+var fixImgDims = function (imgId) {
 
     var img, height, width;
-    img = slide.select("." + imgClass);
+    img = slide.select("#" + imgId);
 
     if (img != null) {
         var h = img.node().naturalHeight;
@@ -84,7 +84,7 @@ var createSlide = function () {
        .attr("src", function(d) { return d.src })
        .attr("id", function(d) { return "pic_" + d.key })
        .attr("class", "pic hidden")
-       .attr("onload", function () { fixImgDims("pic") });
+       .attr("onload", function (d) { fixImgDims("pic_" + d.key) });
 };
 
 var nextSlide = function () {
@@ -107,7 +107,7 @@ var nextSlide = function () {
         .attr("src", function(d) { return d.src })
         .attr("id", function(d) { return "pic_" + d.key })
         .attr("class", "pic")
-        .attr("onload", function () { fixImgDims("pic") });
+        .attr("onload", function (d) { fixImgDims("pic_" + d.key) });
 };
 
 // On click on body:
