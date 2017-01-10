@@ -80,10 +80,10 @@ glide.loadPic = function (nextPicSpec, pics) {
         var posAndDims = glide.calcImgPosAndDims(img);
         pics.enter()
            .append("image")
-           .transition()
-           .duration(glide.duration)
            .attr("xlink:href", function(d) { return d.src })
            .attr("id", function(d) { return "pic_" + d.key })
+           .transition()
+           .duration(glide.duration)
            .attr("width", posAndDims.width)
            .attr("height", posAndDims.height)
            .attr("x", posAndDims.x)
