@@ -146,6 +146,9 @@ document.onkeypress = function (e) {
     case " ":   // Space
         glide.nextSlide();
       break;
+    case "Backspace":
+      glide.prevSlide();
+      break;
     case "ArrowDown":
       glide.prevSlide();
       break;
