@@ -172,7 +172,6 @@ d3.json(glide.picsJson, function(data) {
     glide.dataset = data;
     glide.max = glide.dataset.pics.length - 1;
     glide.i = -1;
-    //glide.svg = null;
     glide.setupCanvas();
     glide.nextSlide();
 });
