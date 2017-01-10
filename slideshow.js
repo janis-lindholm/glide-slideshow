@@ -102,9 +102,24 @@ glide.setupCanvas = function () {
 };
 
 glide.nextSlide = function () {
-
-    //Select...
+    // get pic...
     var nextPicSpec = glide.nextPic();
+
+    // show slide...
+    glide.showSlide(nextPicSpec);
+};
+
+glide.prevSlide = function () {
+    // get pic...
+    var nextPicSpec = glide.prevPic();
+
+    // show slide...
+    glide.showSlide(nextPicSpec);
+};
+
+glide.showSlide = function (nextPicSpec) {
+
+    // select pics
     var pics = glide.svg.selectAll("image")
                         .data(nextPicSpec, glide.key);
 
@@ -120,9 +135,36 @@ glide.nextSlide = function () {
 };
 
 // On click on body:
-d3.select("body").on("click", function() {
+d3.select("body").on("click", function(e) {
     glide.nextSlide();
 });
+
+// On key press:
+document.onkeypress = function (e) {
+    e = e || window.event;
+    switch (e.key) {
+    case " ":   // Space
+        glide.nextSlide();
+      break;
+    case "ArrowDown":
+      glide.prevSlide();
+      break;
+    case "ArrowUp":
+      glide.nextSlide();
+      break;
+    case "ArrowLeft":
+      glide.prevSlide();
+      break;
+    case "ArrowRight":
+      glide.nextSlide();
+      break;
+    case "Enter":
+      glide.nextSlide();
+      break;
+    default:
+      return;
+  }
+};
 
 // On page load:
 glide.setupCanvas();
