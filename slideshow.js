@@ -1,6 +1,8 @@
-var duration = 2000;
+var glide = glide || {};
 
-var pix = [
+glide.duration = 2000;
+
+glide.pix = [
     "pics/walter.jpg",
     "pics/163_by_e4v.jpg",
     "pics/A_Little_Quetzal_by_vgerasimov.jpg",
@@ -17,40 +19,39 @@ var pix = [
     "pics/Bird_by_Magnus.jpg"
 ];
 
-var max = pix.length - 1;
-var i = -1;
-var slide;
+glide.max = glide.pix.length - 1;
+glide.i = -1;
+glide.svg;
 
-var nextPic = function () {
-    if (i == max) {
-        i = 0;
+glide.nextPic = function () {
+    if (glide.i == glide.max) {
+        glide.i = 0;
     } else {
-        i++;
+        glide.i++;
     }
-    return [{"key": i, "src": pix[i]}];
+    return [{"key": glide.i, "src": glide.pix[glide.i]}];
 };
 
-var prevPic = function () {
-    if (i == 0) {
-        i = max;
+glide.prevPic = function () {
+    if (glide.i == 0) {
+        glide.i = glide.max;
     } else {
-        i--;
+        glide.i--;
     }
-    return [{"key": i, "src": pix[i]}];
+    return [{"key": glide.i, "src": glide.pix[glide.i]}];
 };
 
-var key = function (d) {
+glide.key = function (d) {
     return d.key;
 };
 
-var fixImgDims = function (imgId) {
+glide.calcImgPosAndDims = function (img) {
 
-    var img, height, width;
-    img = slide.select("#" + imgId);
+    var height, width, x, y;
 
     if (img != null) {
-        var h = img.node().naturalHeight;
-        var w = img.node().naturalWidth;
+        var h = img.naturalHeight;
+        var w = img.naturalWidth;
 
         var wh = window.innerHeight;
         var ww = window.innerWidth;
@@ -66,54 +67,65 @@ var fixImgDims = function (imgId) {
             height = Math.round(h * scale);
         }
 
-        img.attr("width", width)
-           .attr("height", height)
-           .attr("class", "pic");
+        x = (ww - width) / 2;
+        y = (wh - height) / 2;
     }
+
+    return {"width": width, "height": height, "x": x, "y": y};
 };
 
-var createSlide = function () {
-    slide = d3.select("body")
-              .append("div")
-              .attr("id", "slide");
+glide.loadPic = function (nextPicSpec, pics) {
+    var img = new Image();
+    img.onload = function () {
+        var posAndDims = glide.calcImgPosAndDims(img);
+        pics.enter()
+           .append("image")
+           .attr("xlink:href", function(d) { return d.src })
+           .attr("id", function(d) { return "pic_" + d.key })
+           .attr("width", posAndDims.width)
+           .attr("height", posAndDims.height)
+           .attr("x", posAndDims.x)
+           .attr("y", posAndDims.y);
+    };
+    img.src = nextPicSpec[0].src;
+}
 
-    slide.selectAll("img")
-       .data(nextPic(), key)
-       .enter()
-       .append("img")
-       .attr("src", function(d) { return d.src })
-       .attr("id", function(d) { return "pic_" + d.key })
-       .attr("class", "pic hidden")
-       .attr("onload", function (d) { fixImgDims("pic_" + d.key) });
+glide.createSlide = function () {
+    glide.svg = d3.select("body")
+                  .append("svg")
+                  .attr("width", window.innerWidth)
+                  .attr("height", window.innerHeight)
+                  .attr("id", "canvas")
+                  .attr("class", "canvas");
+
+    var nextPicSpec = glide.nextPic();
+    var pics = glide.svg.selectAll("image")
+                        .data(nextPicSpec, glide.key);
+    glide.loadPic(nextPicSpec, pics);
 };
 
-var nextSlide = function () {
+glide.nextSlide = function () {
 
     //Select...
-    var pics = slide.selectAll("img")
-                    .data(nextPic(), key);
+    var nextPicSpec = glide.nextPic();
+    var pics = glide.svg.selectAll("image")
+                        .data(nextPicSpec, glide.key);
 
-    // remove old pic
+    // remove old pic (if exists)
     pics.exit()
         .transition()
-        .duration(duration)
-        .attr("width", 1)
-        .attr("height", 1)
+        .duration(glide.duration)
+        .attr("x", window.innerWidth + 10)
         .remove();
 
-    // add new pic
-    pics.enter()
-        .append("img")
-        .attr("src", function(d) { return d.src })
-        .attr("id", function(d) { return "pic_" + d.key })
-        .attr("class", "pic")
-        .attr("onload", function (d) { fixImgDims("pic_" + d.key) });
+    // load new pic
+    glide.loadPic(nextPicSpec, pics);
 };
 
 // On click on body:
 d3.select("body").on("click", function() {
-    nextSlide();
+    glide.nextSlide();
 });
 
 // On page load:
-createSlide();
+glide.createSlide();
