@@ -1,27 +1,7 @@
 var glide = glide || {};
 
 glide.duration = 2000;
-
-glide.pix = [
-    "pics/walter.jpg",
-    "pics/163_by_e4v.jpg",
-    "pics/A_Little_Quetzal_by_vgerasimov.jpg",
-    "pics/Aeg_by_Tauno_Erik.jpg",
-    "pics/Arboreal_ballet_by_Bob_Farrell.jpg",
-    "pics/Aubergine_Sea_by_Wyatt_Kirby.jpg",
-    "pics/Backyard_Mushrooms_by_Kurt_Zitzelman.jpg",
-    "pics/Bay.jpg",
-    "pics/Beach_by_Renato_Giordanelli.jpg",
-    "pics/Begonia_by_fatpoint21.jpg",
-    "pics/Below_Clouds_by_kobinho.jpg",
-    "pics/Berries_by_Orb9220.jpg",
-    "pics/Berries_by_Tom_Kijas.jpg",
-    "pics/Bird_by_Magnus.jpg"
-];
-
-glide.max = glide.pix.length - 1;
-glide.i = -1;
-glide.svg;
+glide.picsJson = "pics.json";
 
 glide.nextPic = function () {
     if (glide.i == glide.max) {
@@ -29,7 +9,7 @@ glide.nextPic = function () {
     } else {
         glide.i++;
     }
-    return [{"key": glide.i, "src": glide.pix[glide.i]}];
+    return [{"key": glide.i, "src": glide.dataset.pics[glide.i]}];
 };
 
 glide.prevPic = function () {
@@ -38,7 +18,7 @@ glide.prevPic = function () {
     } else {
         glide.i--;
     }
-    return [{"key": glide.i, "src": glide.pix[glide.i]}];
+    return [{"key": glide.i, "src": glide.dataset.pics[glide.i]}];
 };
 
 glide.key = function (d) {
@@ -97,8 +77,7 @@ glide.setupCanvas = function () {
                   .append("svg")
                   .attr("width", window.innerWidth)
                   .attr("height", window.innerHeight)
-                  .attr("id", "canvas")
-                  .attr("class", "canvas");
+                  .attr("id", "canvas");
 };
 
 glide.nextSlide = function () {
@@ -170,5 +149,11 @@ document.onkeypress = function (e) {
 };
 
 // On page load:
-glide.setupCanvas();
-glide.nextSlide();
+d3.json(glide.picsJson, function(data) {
+    glide.dataset = data;
+    glide.max = glide.dataset.pics.length - 1;
+    glide.i = -1;
+    glide.svg = null;
+    glide.setupCanvas();
+    glide.nextSlide();
+});
