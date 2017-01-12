@@ -1,7 +1,13 @@
 var glide = glide || {};
 
-glide.duration = 2000;
+// slideshow defaults
+glide.showDuration = 2000;
+glide.animDuration = 2000;
+glide.autoForward = true;
+
+// pic catalog path
 glide.picsJson = "pics.json";
+glide.intervalId = null;
 
 glide.nextPic = function () {
     if (glide.i == glide.max) {
@@ -66,7 +72,7 @@ glide.loadPic = function (nextPicSpec, pics) {
            .attr("xlink:href", function(d) { return d.src })
            .attr("id", function(d) { return "pic_" + d.key })
            .transition()
-           .duration(glide.duration)
+           .duration(glide.animDuration)
            .attr("width", posAndDims.width)
            .attr("height", posAndDims.height)
            .attr("x", posAndDims.x)
@@ -108,13 +114,30 @@ glide.showSlide = function (nextPicSpec) {
     // remove old pic (if exists)
     pics.exit()
         .transition()
-        .duration(glide.duration)
+        .duration(glide.animDuration)
         .attr("x", window.innerWidth + 10)
         .remove();
 
     // load new pic
     glide.loadPic(nextPicSpec, pics);
 };
+
+glide.startShow = function (data) {
+    glide.dataset = data;
+    glide.max = glide.dataset.pics.length - 1;
+    glide.i = -1;
+    glide.setupCanvas();
+    glide.nextSlide();
+    if (glide.autoForward) {
+        glide.intervalId = setInterval(glide.nextSlide, glide.showDuration);
+    }
+}
+
+glide.stopShow = function () {
+    if (glide.intervalId != null) {
+        clearInterval(glide.intervalId);
+    }
+}
 
 // On click on body:
 d3.select("body").on("click", function(e) {
@@ -146,6 +169,9 @@ document.onkeypress = function (e) {
     case "Enter":
       glide.nextSlide();
       break;
+    case "Escape":
+      glide.stopShow();
+      break;
     default:
       return;
   }
@@ -169,9 +195,5 @@ window.onresize = function(e) {
 
 // On page load:
 d3.json(glide.picsJson, function(data) {
-    glide.dataset = data;
-    glide.max = glide.dataset.pics.length - 1;
-    glide.i = -1;
-    glide.setupCanvas();
-    glide.nextSlide();
+    glide.startShow(data);
 });
