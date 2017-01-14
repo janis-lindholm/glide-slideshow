@@ -129,7 +129,7 @@ glide.showSlide = function (nextPicSpec) {
         glide.animations[glide.param.animation](nextPicSpec, pics);
     } else {
         console.log("Unknown transition '" + glide.param.animation + "'");
-        glide.tsNone(nextPicSpec, pics);
+        glide.aniNone(nextPicSpec, pics);
     }
 };
 
@@ -137,7 +137,7 @@ glide.picId = function (d) { return "pic_" + d.key };
 
 glide.picSrc = function (d) { return d.src };
 
-glide.tsNone = function (nextPicSpec, pics) {
+glide.aniNone = function (nextPicSpec, pics) {
     // (1) remove old pic (if exists)
     pics.exit()
         .remove();
@@ -158,7 +158,39 @@ glide.tsNone = function (nextPicSpec, pics) {
     img.src = nextPicSpec[0].src;
 };
 
-glide.tsSlideRightAndZoomIn = function (nextPicSpec, pics) {
+glide.aniNotImplemented = function (nextPicSpec, pics) {
+    console.log("This animation is not yet implemented!");
+    glide.aniNone(nextPicSpec, pics);
+};
+
+glide.aniZoomIn = function (nextPicSpec, pics) {
+    // (1) remove old pic (if exists)
+    pics.exit()
+        .remove();
+
+    // (2) load new pic
+    var img = new Image();
+    img.onload = function () {
+        var posAndDims = glide.calcImgPosAndDims(img);
+        pics.enter()
+           .append("image")
+           .attr("xlink:href", glide.picSrc)
+           .attr("id", glide.picId)
+           .attr("width", 1)
+           .attr("height", 1)
+           .attr("x", window.innerWidth / 2)
+           .attr("y", window.innerHeight / 2)
+           .transition()
+           .duration(glide.param.animDuration)
+           .attr("width", posAndDims.width)
+           .attr("height", posAndDims.height)
+           .attr("x", posAndDims.x)
+           .attr("y", posAndDims.y);
+    };
+    img.src = nextPicSpec[0].src;
+};
+
+glide.aniSlideRightAndZoomIn = function (nextPicSpec, pics) {
     // (1) remove old pic (if exists)
     pics.exit()
         .transition()
@@ -184,12 +216,12 @@ glide.tsSlideRightAndZoomIn = function (nextPicSpec, pics) {
     img.src = nextPicSpec[0].src;
 };
 
-glide.registerTransitions = function () {
-    glide.animations.NONE = glide.tsNone;
-    glide.animations.ZOOM_IN = glide.tsNone;
-    glide.animations.PUZZLE = glide.tsNone;
-    glide.animations.SLIDE_RIGHT = glide.tsNone;
-    glide.animations.SLIDE_RIGHT_AND_ZOOM_IN = glide.tsSlideRightAndZoomIn;
+glide.registerAnimations = function () {
+    glide.animations.NONE = glide.aniNone;
+    glide.animations.ZOOM_IN = glide.aniZoomIn;
+    glide.animations.PUZZLE = glide.aniNotImplemented;
+    glide.animations.SLIDE_RIGHT = glide.aniNotImplemented;
+    glide.animations.SLIDE_RIGHT_AND_ZOOM_IN = glide.aniSlideRightAndZoomIn;
 };
 
 glide.startShow = function (data) {
@@ -197,7 +229,7 @@ glide.startShow = function (data) {
     glide.max = glide.dataset.pics.length - 1;
     glide.i = -1;
     glide.updateParams();
-    glide.registerTransitions();
+    glide.registerAnimations();
     glide.setupCanvas();
     glide.nextSlide();
     if (glide.param.autoForward) {
