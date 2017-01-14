@@ -4,6 +4,7 @@ var glide = glide || {};
  *** Slideshow Param Defaults ***
  *****************************************************************************/
 glide.param = {};
+glide.param.name = "Slideshow";
 glide.param.showDuration = 5000;
 glide.param.animDuration = 2000;
 glide.param.autoForward = true;
@@ -15,7 +16,14 @@ glide.picsJson = "pics.json";   // pic catalog path
 glide.intervalId = null;
 
 /******************************************************************************
- *** Functions ***
+ *** Helper Functions ***
+ *****************************************************************************/
+glide.isScalar = function (obj) {
+    return (/string|number|boolean/).test(typeof obj);
+};
+
+/******************************************************************************
+ *** Glide Functions ***
  *****************************************************************************/
 glide.nextPic = function () {
     if (glide.i == glide.max) {
@@ -89,6 +97,20 @@ glide.loadPic = function (nextPicSpec, pics) {
     img.src = nextPicSpec[0].src;
 }
 
+glide.updateParams = function () {
+    Object.keys(glide.param).forEach(function(key, index) {
+        if (glide.dataset.hasOwnProperty(key)) {
+            var val = glide.dataset[key];
+            if (glide.isScalar(val)) {
+                console.log("Using custom slideshow param '" + key + "' : " + val);
+                glide.param[key] = val;
+            } else {
+                console.log("Ignoring invalid slideshow param '" + key + "'.");
+            }
+        }
+    });
+};
+
 glide.setupCanvas = function () {
     glide.svg = d3.select("body")
                   .append("svg")
@@ -134,6 +156,7 @@ glide.startShow = function (data) {
     glide.dataset = data;
     glide.max = glide.dataset.pics.length - 1;
     glide.i = -1;
+    glide.updateParams();
     glide.setupCanvas();
     glide.nextSlide();
     if (glide.param.autoForward) {
