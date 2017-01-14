@@ -216,38 +216,11 @@ glide.aniSlideRight = function (nextPicSpec, pics) {
     img.src = nextPicSpec[0].src;
 };
 
-glide.aniSlideRightAndZoomIn = function (nextPicSpec, pics) {
-    // (1) remove old pic (if exists)
-    pics.exit()
-        .transition()
-        .duration(glide.param.animDuration)
-        .attr("x", window.innerWidth)
-        .remove();
-
-    // (2) load new pic
-    var img = new Image();
-    img.onload = function () {
-        var posAndDims = glide.calcImgPosAndDims(img);
-        pics.enter()
-           .append("image")
-           .attr("xlink:href", glide.picSrc)
-           .attr("id", glide.picId)
-           .transition()
-           .duration(glide.param.animDuration)
-           .attr("width", posAndDims.width)
-           .attr("height", posAndDims.height)
-           .attr("x", posAndDims.x)
-           .attr("y", posAndDims.y);
-    };
-    img.src = nextPicSpec[0].src;
-};
-
 glide.registerAnimations = function () {
     glide.animations.NONE = glide.aniNone;
     glide.animations.ZOOM_IN = glide.aniZoomIn;
     glide.animations.PUZZLE = glide.aniNotImplemented;
     glide.animations.SLIDE_RIGHT = glide.aniSlideRight;
-    glide.animations.SLIDE_RIGHT_AND_ZOOM_IN = glide.aniSlideRightAndZoomIn;
 };
 
 glide.startShow = function (data) {
