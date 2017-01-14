@@ -8,12 +8,14 @@ glide.param.name = "Slideshow";
 glide.param.showDuration = 5000;
 glide.param.animDuration = 2000;
 glide.param.autoForward = true;
+glide.param.animation = "SLIDE_RIGHT_AND_ZOOM_IN";
 
 /******************************************************************************
  *** Internal Vars ***
  *****************************************************************************/
 glide.picsJson = "pics.json";   // pic catalog path
 glide.intervalId = null;
+glide.animations = {};
 
 /******************************************************************************
  *** Helper Functions ***
@@ -79,24 +81,6 @@ glide.calcImgPosAndDims = function (img) {
              "y": y };
 };
 
-glide.loadPic = function (nextPicSpec, pics) {
-    var img = new Image();
-    img.onload = function () {
-        var posAndDims = glide.calcImgPosAndDims(img);
-        pics.enter()
-           .append("image")
-           .attr("xlink:href", function(d) { return d.src })
-           .attr("id", function(d) { return "pic_" + d.key })
-           .transition()
-           .duration(glide.param.animDuration)
-           .attr("width", posAndDims.width)
-           .attr("height", posAndDims.height)
-           .attr("x", posAndDims.x)
-           .attr("y", posAndDims.y);
-    };
-    img.src = nextPicSpec[0].src;
-}
-
 glide.updateParams = function () {
     Object.keys(glide.param).forEach(function(key, index) {
         if (glide.dataset.hasOwnProperty(key)) {
@@ -137,19 +121,75 @@ glide.prevSlide = function () {
 
 glide.showSlide = function (nextPicSpec) {
 
-    // select pics
+    // select all image objects
     var pics = glide.svg.selectAll("image")
                         .data(nextPicSpec, glide.key);
+    // show next pic using selected transition
+    if (glide.animations.hasOwnProperty(glide.param.animation)) {
+        glide.animations[glide.param.animation](nextPicSpec, pics);
+    } else {
+        console.log("Unknown transition '" + glide.param.animation + "'");
+        glide.tsNone(nextPicSpec, pics);
+    }
+};
 
-    // remove old pic (if exists)
+glide.picId = function (d) { return "pic_" + d.key };
+
+glide.picSrc = function (d) { return d.src };
+
+glide.tsNone = function (nextPicSpec, pics) {
+    // (1) remove old pic (if exists)
+    pics.exit()
+        .remove();
+
+    // (2) load new pic
+    var img = new Image();
+    img.onload = function () {
+        var posAndDims = glide.calcImgPosAndDims(img);
+        pics.enter()
+           .append("image")
+           .attr("xlink:href", glide.picSrc)
+           .attr("id", glide.picId)
+           .attr("width", posAndDims.width)
+           .attr("height", posAndDims.height)
+           .attr("x", posAndDims.x)
+           .attr("y", posAndDims.y);
+    };
+    img.src = nextPicSpec[0].src;
+};
+
+glide.tsSlideRightAndZoomIn = function (nextPicSpec, pics) {
+    // (1) remove old pic (if exists)
     pics.exit()
         .transition()
         .duration(glide.param.animDuration)
         .attr("x", window.innerWidth + 10)
         .remove();
 
-    // load new pic
-    glide.loadPic(nextPicSpec, pics);
+    // (2) load new pic
+    var img = new Image();
+    img.onload = function () {
+        var posAndDims = glide.calcImgPosAndDims(img);
+        pics.enter()
+           .append("image")
+           .attr("xlink:href", glide.picSrc)
+           .attr("id", glide.picId)
+           .transition()
+           .duration(glide.param.animDuration)
+           .attr("width", posAndDims.width)
+           .attr("height", posAndDims.height)
+           .attr("x", posAndDims.x)
+           .attr("y", posAndDims.y);
+    };
+    img.src = nextPicSpec[0].src;
+};
+
+glide.registerTransitions = function () {
+    glide.animations.NONE = glide.tsNone;
+    glide.animations.ZOOM_IN = glide.tsNone;
+    glide.animations.PUZZLE = glide.tsNone;
+    glide.animations.SLIDE_RIGHT = glide.tsNone;
+    glide.animations.SLIDE_RIGHT_AND_ZOOM_IN = glide.tsSlideRightAndZoomIn;
 };
 
 glide.startShow = function (data) {
@@ -157,6 +197,7 @@ glide.startShow = function (data) {
     glide.max = glide.dataset.pics.length - 1;
     glide.i = -1;
     glide.updateParams();
+    glide.registerTransitions();
     glide.setupCanvas();
     glide.nextSlide();
     if (glide.param.autoForward) {
