@@ -190,12 +190,38 @@ glide.aniZoomIn = function (nextPicSpec, pics) {
     img.src = nextPicSpec[0].src;
 };
 
+glide.aniSlideRight = function (nextPicSpec, pics) {
+    // (1) remove old pic (if exists)
+    pics.exit()
+        .transition()
+        .duration(glide.param.animDuration)
+        .attr("x", window.innerWidth)
+        .remove();
+
+    // (2) load new pic
+    var img = new Image();
+    img.onload = function () {
+        var posAndDims = glide.calcImgPosAndDims(img);
+        pics.enter()
+            .append("image")
+            .attr("xlink:href", glide.picSrc)
+            .attr("id", glide.picId)
+            .attr("width", posAndDims.width)
+            .attr("height", posAndDims.height)
+            .attr("x", 0 - posAndDims.width)
+            .transition()
+            .duration(glide.param.animDuration)
+            .attr("x", posAndDims.x);
+    };
+    img.src = nextPicSpec[0].src;
+};
+
 glide.aniSlideRightAndZoomIn = function (nextPicSpec, pics) {
     // (1) remove old pic (if exists)
     pics.exit()
         .transition()
         .duration(glide.param.animDuration)
-        .attr("x", window.innerWidth + 10)
+        .attr("x", window.innerWidth)
         .remove();
 
     // (2) load new pic
@@ -220,7 +246,7 @@ glide.registerAnimations = function () {
     glide.animations.NONE = glide.aniNone;
     glide.animations.ZOOM_IN = glide.aniZoomIn;
     glide.animations.PUZZLE = glide.aniNotImplemented;
-    glide.animations.SLIDE_RIGHT = glide.aniNotImplemented;
+    glide.animations.SLIDE_RIGHT = glide.aniSlideRight;
     glide.animations.SLIDE_RIGHT_AND_ZOOM_IN = glide.aniSlideRightAndZoomIn;
 };
 
