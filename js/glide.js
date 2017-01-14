@@ -3,6 +3,7 @@ var glide = glide || {};
 /******************************************************************************
  *** Slideshow Param Defaults ***
  *****************************************************************************/
+glide.param = {};
 glide.param.showDuration = 5000;
 glide.param.animDuration = 2000;
 glide.param.autoForward = true;
