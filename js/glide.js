@@ -243,11 +243,90 @@ glide.aniSlideTop = function (nextPicSpec, pics) {
     img.src = nextPicSpec[0].src;
 };
 
+glide.getSquareDims = function (picPosAndDims) {
+
+    var squaresPerRow = 8;
+    var positions = [];
+    var sqWidth, numSqWide, numSqHigh, planeWidth, planeHeight;
+
+    if (picPosAndDims.width > picPosAndDims.height) {
+        // fill complete width with squares
+        sqWidth = Math.ceil(picPosAndDims.width / squaresPerRow);
+        numSqWide = squaresPerRow;
+        numSqHigh = Math.ceil(picPosAndDims.height / sqWidth);
+    } else {
+        // fill complete height with squares
+        sqWidth = Math.ceil(picPosAndDims.height / squaresPerRow);
+        numSqHigh = squaresPerRow;
+        numSqWide = Math.ceil(picPosAndDims.width / sqWidth);
+    }
+
+    planeWidth = sqWidth * numSqWide;
+    planeHeight = sqWidth * numSqHigh;
+
+    // calculate positions
+    var startX = picPosAndDims.x - ((planeWidth - picPosAndDims.width) / 2);
+    var startY = picPosAndDims.y - ((planeHeight - picPosAndDims.height) / 2);
+    var count = 0;
+    var xPos = startX;
+    var yPos = startY;
+    for (var i=1; i <= numSqHigh; i++) {
+        for (var j=1; j <= numSqWide; j++) {
+            count++;
+            positions.push({ key: count, x: xPos, y: yPos });
+            xPos += sqWidth;
+        }
+        yPos += sqWidth;
+        xPos = startX;
+    }
+
+    return {
+        width: sqWidth,
+        squares: positions
+    };
+};
+
+glide.aniMemory = function (nextPicSpec, pics) {
+    // (1) remove old pic (if exists)
+    pics.exit()
+        .remove();
+
+    // (2) load new pic
+    var img = new Image();
+    img.onload = function () {
+        var posAndDims = glide.calcImgPosAndDims(img);
+        pics.enter()
+           .append("image")
+           .attr("xlink:href", glide.picSrc)
+           .attr("id", glide.picId)
+           .attr("width", posAndDims.width)
+           .attr("height", posAndDims.height)
+           .attr("x", posAndDims.x)
+           .attr("y", posAndDims.y);
+
+       // immediately draw squares
+       var squareDims = glide.getSquareDims(posAndDims);
+       var squares = glide.svg.selectAll("rect")
+                              .data(squareDims.squares, glide.key);
+
+      squares.enter()
+             .append("rect")
+             .attr("width", squareDims.width)
+             .attr("height", squareDims.width)
+             .attr("x", function (d) { return d.x })
+             .attr("y", function (d) { return d.y })
+             .attr("id", function (d) { return "sq_" + d.key })
+             .attr("fill", "crimson");
+             //.attr("fill", "#1e2426");
+    };
+    img.src = nextPicSpec[0].src;
+};
+
 glide.registerAnimations = function () {
     glide.animations.ZOOM_IN = glide.aniZoomIn;
-    glide.animations.PUZZLE = glide.aniNotImplemented;
     glide.animations.SLIDE_RIGHT = glide.aniSlideRight;
     glide.animations.SLIDE_TOP = glide.aniSlideTop;
+    glide.animations.MEMORY = glide.aniMemory;
 };
 
 glide.startShow = function (data) {
