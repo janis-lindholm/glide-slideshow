@@ -14,7 +14,8 @@ glide.param.animation = "SLIDE_RIGHT_AND_ZOOM_IN";
  *** Internal Vars ***
  *****************************************************************************/
 glide.picsJson = "pics.json";   // pic catalog path
-glide.intervalId = null;
+glide.showIntervalId = null;
+glide.animIntervalId = null;
 glide.animations = {};
 
 /******************************************************************************
@@ -22,6 +23,12 @@ glide.animations = {};
  *****************************************************************************/
 glide.isScalar = function (obj) {
     return (/string|number|boolean/).test(typeof obj);
+};
+
+glide.randSplice = function(array) {
+    var i = Math.floor(Math.random() * array.length);
+    var removed = array.splice(i, 1);
+    return removed;
 };
 
 /******************************************************************************
@@ -287,6 +294,12 @@ glide.getSquareDims = function (picPosAndDims) {
 };
 
 glide.aniMemory = function (nextPicSpec, pics) {
+    // (0) remove old squares (if existing)
+    glide.svg.selectAll("rect")
+             .data([], glide.key)
+             .exit()
+             .remove();
+
     // (1) remove old pic (if exists)
     pics.exit()
         .remove();
@@ -304,20 +317,34 @@ glide.aniMemory = function (nextPicSpec, pics) {
            .attr("x", posAndDims.x)
            .attr("y", posAndDims.y);
 
-       // immediately draw squares
+       // (3) immediately draw squares
        var squareDims = glide.getSquareDims(posAndDims);
-       var squares = glide.svg.selectAll("rect")
-                              .data(squareDims.squares, glide.key);
+       var squareData = squareDims.squares;
+       glide.svg.selectAll("rect")
+                .data(squareData, glide.key)
+                .enter()
+                .append("rect")
+                .attr("width", squareDims.width)
+                .attr("height", squareDims.width)
+                .attr("x", function (d) { return d.x })
+                .attr("y", function (d) { return d.y })
+                .attr("id", function (d) { return "sq_" + d.key })
+                .attr("fill", "#1e2426");
 
-      squares.enter()
-             .append("rect")
-             .attr("width", squareDims.width)
-             .attr("height", squareDims.width)
-             .attr("x", function (d) { return d.x })
-             .attr("y", function (d) { return d.y })
-             .attr("id", function (d) { return "sq_" + d.key })
-             .attr("fill", "crimson");
-             //.attr("fill", "#1e2426");
+       // (4) remove squares (one by one)
+       glide.animIntervalId = setInterval(function () {
+               if ( squareData.length > 0 ) {
+                   glide.randSplice(squareData);
+                   glide.svg.selectAll("rect")
+                         .data(squareData, glide.key)
+                         .exit()
+                         .remove();
+               } else {
+                   clearInterval(glide.animIntervalId);
+                   glide.animIntervalId = null;
+               }
+       },
+       100);
     };
     img.src = nextPicSpec[0].src;
 };
@@ -338,13 +365,14 @@ glide.startShow = function (data) {
     glide.setupCanvas();
     glide.nextSlide();
     if (glide.param.autoForward) {
-        glide.intervalId = setInterval(glide.nextSlide, glide.param.showDuration);
+        glide.showIntervalId = setInterval(glide.nextSlide, glide.param.showDuration);
     }
 };
 
 glide.stopShow = function () {
-    if (glide.intervalId != null) {
-        clearInterval(glide.intervalId);
+    if (glide.showIntervalId != null) {
+        clearInterval(glide.showIntervalId);
+        glide.showIntervalId = null;
     }
 };
 
