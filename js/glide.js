@@ -31,6 +31,12 @@ glide.randSplice = function(array) {
     return removed;
 };
 
+glide.randKey = function(obj) {
+    var keys = Object.keys(obj);
+    var i = Math.floor(Math.random() * keys.length);
+    return keys[i];
+};
+
 /******************************************************************************
  *** Glide Functions ***
  *****************************************************************************/
@@ -131,8 +137,11 @@ glide.showSlide = function (nextPicSpec) {
     // select all image objects
     var pics = glide.svg.selectAll("image")
                         .data(nextPicSpec, glide.key);
-    // show next pic using selected animation
-    if (glide.animations.hasOwnProperty(glide.param.animation)) {
+    // show next pic using random or selected animation
+    if (glide.param.animation == "RANDOM") {
+        var anim = glide.randKey(glide.animations);
+        glide.animations[anim](nextPicSpec, pics);
+    } else if (glide.animations.hasOwnProperty(glide.param.animation)) {
         glide.animations[glide.param.animation](nextPicSpec, pics);
     } else {    // no animation
         glide.aniNone(nextPicSpec, pics);
