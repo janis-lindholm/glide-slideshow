@@ -124,11 +124,10 @@ glide.showSlide = function (nextPicSpec) {
     // select all image objects
     var pics = glide.svg.selectAll("image")
                         .data(nextPicSpec, glide.key);
-    // show next pic using selected transition
+    // show next pic using selected animation
     if (glide.animations.hasOwnProperty(glide.param.animation)) {
         glide.animations[glide.param.animation](nextPicSpec, pics);
-    } else {
-        console.log("Unknown transition '" + glide.param.animation + "'");
+    } else {    // no animation
         glide.aniNone(nextPicSpec, pics);
     }
 };
@@ -209,6 +208,7 @@ glide.aniSlideRight = function (nextPicSpec, pics) {
             .attr("width", posAndDims.width)
             .attr("height", posAndDims.height)
             .attr("x", 0 - posAndDims.width)
+            .attr("y", posAndDims.y)
             .transition()
             .duration(glide.param.animDuration)
             .attr("x", posAndDims.x);
@@ -216,11 +216,38 @@ glide.aniSlideRight = function (nextPicSpec, pics) {
     img.src = nextPicSpec[0].src;
 };
 
+glide.aniSlideTop = function (nextPicSpec, pics) {
+    // (1) remove old pic (if exists)
+    pics.exit()
+        .transition()
+        .duration(glide.param.animDuration)
+        .attr("y", window.innerHeight)
+        .remove();
+
+    // (2) load new pic
+    var img = new Image();
+    img.onload = function () {
+        var posAndDims = glide.calcImgPosAndDims(img);
+        pics.enter()
+            .append("image")
+            .attr("xlink:href", glide.picSrc)
+            .attr("id", glide.picId)
+            .attr("width", posAndDims.width)
+            .attr("height", posAndDims.height)
+            .attr("x", posAndDims.x)
+            .attr("y", 0 - posAndDims.height)
+            .transition()
+            .duration(glide.param.animDuration)
+            .attr("y", posAndDims.y);
+    };
+    img.src = nextPicSpec[0].src;
+};
+
 glide.registerAnimations = function () {
-    glide.animations.NONE = glide.aniNone;
     glide.animations.ZOOM_IN = glide.aniZoomIn;
     glide.animations.PUZZLE = glide.aniNotImplemented;
     glide.animations.SLIDE_RIGHT = glide.aniSlideRight;
+    glide.animations.SLIDE_TOP = glide.aniSlideTop;
 };
 
 glide.startShow = function (data) {
@@ -234,14 +261,13 @@ glide.startShow = function (data) {
     if (glide.param.autoForward) {
         glide.intervalId = setInterval(glide.nextSlide, glide.param.showDuration);
     }
-}
+};
 
 glide.stopShow = function () {
     if (glide.intervalId != null) {
         clearInterval(glide.intervalId);
     }
-}
-
+};
 
 /******************************************************************************
  *** Event Handler ***
