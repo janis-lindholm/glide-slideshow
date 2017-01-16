@@ -16,6 +16,7 @@ glide.param.animation = "SLIDE_RIGHT_AND_ZOOM_IN";
 glide.picsJson = "pics.json";   // pic catalog path
 glide.showIntervalId = null;
 glide.animIntervalId = null;
+glide.lastAnimation = null;
 glide.animations = {};
 
 /******************************************************************************
@@ -50,7 +51,7 @@ glide.nextPic = function () {
 };
 
 glide.prevPic = function () {
-    if (glide.i == 0) {
+    if (glide.i === 0) {
         glide.i = glide.max;
     } else {
         glide.i--;
@@ -66,7 +67,7 @@ glide.calcImgPosAndDims = function (img) {
 
     var height, width, x, y;
 
-    if (img != null) {  // new image
+    if (img !== null) {  // new image
         glide.naturalHeight = img.naturalHeight;
         glide.naturalWidth = img.naturalWidth;
     }
@@ -108,6 +109,15 @@ glide.updateParams = function () {
     });
 };
 
+glide.getRandAnimation = function () {
+    var anim = glide.lastAnimation;
+    while (anim == glide.lastAnimation) {
+        anim = glide.randKey(glide.animations);
+    }
+    glide.lastAnimation = anim;
+    return anim;
+};
+
 glide.setupCanvas = function () {
     glide.svg = d3.select("body")
                   .append("svg")
@@ -139,7 +149,7 @@ glide.showSlide = function (nextPicSpec) {
                         .data(nextPicSpec, glide.key);
     // show next pic using random or selected animation
     if (glide.param.animation == "RANDOM") {
-        var anim = glide.randKey(glide.animations);
+        var anim = glide.getRandAnimation();
         glide.animations[anim](nextPicSpec, pics);
     } else if (glide.animations.hasOwnProperty(glide.param.animation)) {
         glide.animations[glide.param.animation](nextPicSpec, pics);
@@ -148,9 +158,9 @@ glide.showSlide = function (nextPicSpec) {
     }
 };
 
-glide.picId = function (d) { return "pic_" + d.key };
+glide.picId = function (d) { return "pic_" + d.key; };
 
-glide.picSrc = function (d) { return d.src };
+glide.picSrc = function (d) { return d.src; };
 
 glide.aniNone = function (nextPicSpec, pics) {
     // (1) remove old pic (if exists)
@@ -303,7 +313,7 @@ glide.getSquareDims = function (picPosAndDims) {
 };
 
 glide.aniMemory = function (nextPicSpec, pics) {
-    // (0) remove old squares (if existing)
+    // (0) remove old squares (if existing) --> BUG! PUT TO EXIT HANDLER!
     glide.svg.selectAll("rect")
              .data([], glide.key)
              .exit()
@@ -335,9 +345,9 @@ glide.aniMemory = function (nextPicSpec, pics) {
                 .append("rect")
                 .attr("width", squareDims.width)
                 .attr("height", squareDims.width)
-                .attr("x", function (d) { return d.x })
-                .attr("y", function (d) { return d.y })
-                .attr("id", function (d) { return "sq_" + d.key })
+                .attr("x", function (d) { return d.x; })
+                .attr("y", function (d) { return d.y; })
+                .attr("id", function (d) { return "sq_" + d.key; })
                 .attr("fill", "#1e2426");
 
        // (4) remove squares (one by one)
@@ -379,7 +389,7 @@ glide.startShow = function (data) {
 };
 
 glide.stopShow = function () {
-    if (glide.showIntervalId != null) {
+    if (glide.showIntervalId !== null) {
         clearInterval(glide.showIntervalId);
         glide.showIntervalId = null;
     }
