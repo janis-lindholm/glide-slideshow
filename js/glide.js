@@ -8,7 +8,8 @@ glide.param.name = "Slideshow";
 glide.param.showDuration = 5000;
 glide.param.animDuration = 2000;
 glide.param.autoForward = true;
-glide.param.animation = "SLIDE_RIGHT_AND_ZOOM_IN";
+glide.param.bgColor = "#1e2426";
+glide.param.animation = "NONE";
 
 /******************************************************************************
  *** Internal Vars ***
@@ -119,7 +120,11 @@ glide.getRandAnimation = function () {
 };
 
 glide.setupCanvas = function () {
+    d3.select("title")
+      .text(glide.param.name);
+
     glide.svg = d3.select("body")
+                  .attr("style", "background-color: " + glide.param.bgColor)
                   .append("svg")
                   .attr("width", window.innerWidth)
                   .attr("height", window.innerHeight)
@@ -348,7 +353,8 @@ glide.aniMemory = function (nextPicSpec, pics) {
                 .attr("x", function (d) { return d.x; })
                 .attr("y", function (d) { return d.y; })
                 .attr("id", function (d) { return "sq_" + d.key; })
-                .attr("fill", "#1e2426");
+                .attr("stroke", glide.param.bgColor)
+                .attr("fill", glide.param.bgColor);
 
        // (4) remove squares (one by one)
        glide.animIntervalId = setInterval(function () {
