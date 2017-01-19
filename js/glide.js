@@ -10,11 +10,11 @@ glide.param.animDuration = 2000;
 glide.param.autoForward = true;
 glide.param.bgColor = "#1e2426";
 glide.param.animation = "NONE";
+glide.param.picsJsonURI = "pics.json";   // pic catalog URI
 
 /******************************************************************************
  *** Internal Vars ***
  *****************************************************************************/
-glide.picsJson = "pics.json";   // pic catalog path
 glide.showIntervalId = null;
 glide.animIntervalId = null;
 glide.lastAnimation = null;
@@ -459,6 +459,6 @@ window.onresize = function(e) {
 };
 
 // On page load:
-d3.json(glide.picsJson, function(data) {
+d3.json(glide.param.picsJsonURI, function(data) {
     glide.startShow(data);
 });
