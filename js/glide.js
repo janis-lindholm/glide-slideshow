@@ -15,7 +15,7 @@ glide.param.picsJsonURI = "pics.json";   // pic catalog URI
 /******************************************************************************
  *** Internal Vars ***
  *****************************************************************************/
-glide.showIntervalId = null;
+glide.showTimeoutId = null;
 glide.animIntervalId = null;
 glide.lastAnimation = null;
 glide.animations = {};
@@ -149,9 +149,16 @@ glide.prevSlide = function () {
 
 glide.showSlide = function (nextPicSpec) {
 
+    // cancel old timeout
+    if (glide.param.autoForward
+        && glide.showTimeoutId !== null) {
+        clearTimeout(glide.showTimeoutId);
+    }
+
     // select all image objects
     var pics = glide.svg.selectAll("image")
                         .data(nextPicSpec, glide.key);
+
     // show next pic using random or selected animation
     if (glide.param.animation == "RANDOM") {
         var anim = glide.getRandAnimation();
@@ -166,6 +173,17 @@ glide.showSlide = function (nextPicSpec) {
 glide.picId = function (d) { return "pic_" + d.key; };
 
 glide.picSrc = function (d) { return d.src; };
+
+glide.triggerNextSlide = function (millis) {
+    if (glide.param.autoForward) {
+        glide.showTimeoutId = setTimeout(glide.nextSlide, millis);
+    }
+};
+
+glide.aniNotImplemented = function (nextPicSpec, pics) {
+    console.log("This animation is not yet implemented!");
+    glide.aniNone(nextPicSpec, pics);
+};
 
 glide.aniNone = function (nextPicSpec, pics) {
     // (1) remove old pic (if exists)
@@ -184,13 +202,10 @@ glide.aniNone = function (nextPicSpec, pics) {
            .attr("height", posAndDims.height)
            .attr("x", posAndDims.x)
            .attr("y", posAndDims.y);
+
+        glide.triggerNextSlide(glide.param.showDuration);
     };
     img.src = nextPicSpec[0].src;
-};
-
-glide.aniNotImplemented = function (nextPicSpec, pics) {
-    console.log("This animation is not yet implemented!");
-    glide.aniNone(nextPicSpec, pics);
 };
 
 glide.aniZoomIn = function (nextPicSpec, pics) {
@@ -216,6 +231,9 @@ glide.aniZoomIn = function (nextPicSpec, pics) {
            .attr("height", posAndDims.height)
            .attr("x", posAndDims.x)
            .attr("y", posAndDims.y);
+
+        glide.triggerNextSlide(glide.param.animDuration
+            + glide.param.showDuration);
     };
     img.src = nextPicSpec[0].src;
 };
@@ -243,6 +261,9 @@ glide.aniSlideRight = function (nextPicSpec, pics) {
             .transition()
             .duration(glide.param.animDuration)
             .attr("x", posAndDims.x);
+
+            glide.triggerNextSlide(glide.param.animDuration
+                + glide.param.showDuration);
     };
     img.src = nextPicSpec[0].src;
 };
@@ -270,6 +291,9 @@ glide.aniSlideTop = function (nextPicSpec, pics) {
             .transition()
             .duration(glide.param.animDuration)
             .attr("y", posAndDims.y);
+
+        glide.triggerNextSlide(glide.param.animDuration
+            + glide.param.showDuration);
     };
     img.src = nextPicSpec[0].src;
 };
@@ -344,6 +368,8 @@ glide.aniMemory = function (nextPicSpec, pics) {
        // (3) immediately draw squares
        var squareDims = glide.getSquareDims(posAndDims);
        var squareData = squareDims.squares;
+       var squareShowTime = 100;
+       var animDuration = squareData.length * squareShowTime;
        glide.svg.selectAll("rect")
                 .data(squareData, glide.key)
                 .enter()
@@ -369,7 +395,9 @@ glide.aniMemory = function (nextPicSpec, pics) {
                    glide.animIntervalId = null;
                }
        },
-       100);
+       squareShowTime);
+
+       glide.triggerNextSlide(animDuration + glide.param.showDuration);
     };
     img.src = nextPicSpec[0].src;
 };
@@ -389,15 +417,12 @@ glide.startShow = function (data) {
     glide.registerAnimations();
     glide.setupCanvas();
     glide.nextSlide();
-    if (glide.param.autoForward) {
-        glide.showIntervalId = setInterval(glide.nextSlide, glide.param.showDuration);
-    }
 };
 
 glide.stopShow = function () {
-    if (glide.showIntervalId !== null) {
-        clearInterval(glide.showIntervalId);
-        glide.showIntervalId = null;
+    if (glide.showTimeoutId !== null) {
+        clearTimeout(glide.showTimeoutId);
+        glide.showTimeoutId = null;
     }
 };
 
