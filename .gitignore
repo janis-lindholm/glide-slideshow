@@ -1,2 +1,5 @@
 pics.json
+pics/*.jpg
+pics/*.png
+pics/*.gif
 
