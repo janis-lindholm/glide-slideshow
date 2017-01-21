@@ -17,3 +17,12 @@ Five steps to launch a browser based slideshow:
 
 All configuration settings are made in the `pics.json` file.
 
+| Property      | Description | Value Range   | Default  |
+| ------------- | ------------- | ------------- | ----- |
+| name          | slideshow name | string        | "Slideshow" |
+| showDuration  | controls how long a pic is displayed | milliseconds  |  5000 |
+| autoForward   | enables automatic slide change  | true, false   |  true   |
+| bgColor       | background colour | HEX colour code |  #1e2426   |
+| animation     | animation style during slide change | NONE, RANDOM, ZOOM_IN, SLIDE_RIGHT, SLIDE_TOP, MEMORY |  NONE   |
+| animDuration  | controls how much time an animation should take | milliseconds  |  2000   |
+| picsJsonURI   | - | URI, filename |  "pics.json" |
