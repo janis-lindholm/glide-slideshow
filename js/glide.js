@@ -16,8 +16,9 @@ glide.param.picsJsonURI = "pics.json";   // pic catalog URI
  *** Internal Vars ***
  *****************************************************************************/
 glide.showTimeoutId = null;
-glide.animIntervalId = null;
 glide.lastAnimation = null;
+glide.animIntervalId = null;
+glide.cancelAnimation = null;
 glide.animations = {};
 
 /******************************************************************************
@@ -153,6 +154,11 @@ glide.showSlide = function (nextPicSpec) {
     if (glide.param.autoForward
         && glide.showTimeoutId !== null) {
         clearTimeout(glide.showTimeoutId);
+    }
+
+    // cancel old animation
+    if (glide.cancelAnimation !== null) {
+        glide.cancelAnimation();
     }
 
     // select all image objects
@@ -342,12 +348,6 @@ glide.getSquareDims = function (picPosAndDims) {
 };
 
 glide.aniMemory = function (nextPicSpec, pics) {
-    // (0) remove old squares (if existing) --> BUG! PUT TO EXIT HANDLER!
-    glide.svg.selectAll("rect")
-             .data([], glide.key)
-             .exit()
-             .remove();
-
     // (1) remove old pic (if exists)
     pics.exit()
         .remove();
@@ -382,7 +382,22 @@ glide.aniMemory = function (nextPicSpec, pics) {
                 .attr("stroke", glide.param.bgColor)
                 .attr("fill", glide.param.bgColor);
 
-       // (4) remove squares (one by one)
+       // (4) define animation stopper
+       glide.cancelAnimation = function () {
+           if (glide.animIntervalId !== null) {
+               clearInterval(glide.animIntervalId);
+               glide.animIntervalId = null;
+
+               glide.svg.selectAll("rect")
+                        .data([], glide.key)
+                        .exit()
+                        .remove();
+
+               glide.cancelAnimation = null;
+           }
+       };
+
+       // (5) start animation: remove squares (one by one)
        glide.animIntervalId = setInterval(function () {
                if ( squareData.length > 0 ) {
                    glide.randSplice(squareData);
@@ -393,6 +408,7 @@ glide.aniMemory = function (nextPicSpec, pics) {
                } else {
                    clearInterval(glide.animIntervalId);
                    glide.animIntervalId = null;
+                   glide.cancelAnimation = null;
                }
        },
        squareShowTime);
