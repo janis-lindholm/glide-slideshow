@@ -69,7 +69,7 @@ glide.calcImgPosAndDims = function (img) {
 
     var height, width, x, y;
 
-    if (img !== null) {  // new image
+    if (img != null) {  // new image
         glide.naturalHeight = img.naturalHeight;
         glide.naturalWidth = img.naturalWidth;
     }
@@ -152,12 +152,12 @@ glide.showSlide = function (nextPicSpec) {
 
     // cancel old timeout
     if (glide.param.autoForward
-        && glide.showTimeoutId !== null) {
+        && glide.showTimeoutId != null) {
         clearTimeout(glide.showTimeoutId);
     }
 
     // cancel old animation
-    if (glide.cancelAnimation !== null) {
+    if (glide.cancelAnimation != null) {
         glide.cancelAnimation();
     }
 
@@ -384,7 +384,7 @@ glide.aniMemory = function (nextPicSpec, pics) {
 
        // (4) define animation stopper
        glide.cancelAnimation = function () {
-           if (glide.animIntervalId !== null) {
+           if (glide.animIntervalId != null) {
                clearInterval(glide.animIntervalId);
                glide.animIntervalId = null;
 
@@ -436,7 +436,7 @@ glide.startShow = function (data) {
 };
 
 glide.stopShow = function () {
-    if (glide.showTimeoutId !== null) {
+    if (glide.showTimeoutId != null) {
         clearTimeout(glide.showTimeoutId);
         glide.showTimeoutId = null;
     }
