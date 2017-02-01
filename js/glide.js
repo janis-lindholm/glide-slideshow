@@ -486,17 +486,19 @@ document.onkeypress = function (e) {
 // On window resize:
 window.onresize = function(e) {
 
-    // resize canvas
-    glide.svg.attr("width", window.innerWidth)
-             .attr("height", window.innerHeight);
+    if ( glide.svg != null ) {
+        // resize canvas
+        glide.svg.attr("width", window.innerWidth)
+                 .attr("height", window.innerHeight);
 
-    // resize pic
-    var posAndDims = glide.calcImgPosAndDims();
-    glide.svg.selectAll("image")
-           .attr("width", posAndDims.width)
-           .attr("height", posAndDims.height)
-           .attr("x", posAndDims.x)
-           .attr("y", posAndDims.y);
+        // resize pic
+        var posAndDims = glide.calcImgPosAndDims();
+        glide.svg.selectAll("image")
+               .attr("width", posAndDims.width)
+               .attr("height", posAndDims.height)
+               .attr("x", posAndDims.x)
+               .attr("y", posAndDims.y);
+    }
 };
 
 // On page load:
