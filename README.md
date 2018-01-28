@@ -3,7 +3,7 @@ A simple browser based slideshow powered by [D3.js](http://d3js.org).
 
 **Warning: This software is in early alpha state.**
 
-##Quickstart
+#Quickstart
 
 Five steps to launch a browser based slideshow:
 
@@ -13,7 +13,7 @@ Five steps to launch a browser based slideshow:
 4. Open the `slideshow.html` file in your web browser. (currently only Firefox is supported)
 5. Lean back and watch your slideshow.
 
-##Configuration
+#Configuration
 
 All configuration settings are made in the `pics.json` file.
 
