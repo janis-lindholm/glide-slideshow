@@ -52,11 +52,13 @@ def create_json(cat_name, pics):
     d = { 'name': cat_name,
           'type': 'slideshow catalog',
           'showDuration': 5000,
-          'autoForward': "true",
+          'autoForward': "false",
           'animation': "RANDOM",
           'animDuration': 2000,
           'pics': pix }    
     json_str = json.dumps(d, indent=4)
+    json_str = json_str.replace('"false"', "false")
+    json_str = json_str.replace('"true"', "true")
     f = tempfile.NamedTemporaryFile(delete=False)
     f.write(json_str)
     f.close()
