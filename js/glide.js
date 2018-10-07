@@ -67,7 +67,7 @@ glide.key = function (d) {
 
 glide.calcImgPosAndDims = function (img, callback) {
 
-    var wh, ww, height, width, x, y, centerX, centerY, rotateDeg, posAndDims;
+    var wh, ww, height, width, x, y, centerX, centerY, rotateDeg, tHeight, tWidth, tx, ty, posAndDims;
     var orientation = -1;
 
     if (img != null) {  // new image
@@ -75,23 +75,24 @@ glide.calcImgPosAndDims = function (img, callback) {
 			orientation = EXIF.getTag(this, "Orientation");
 			if (orientation == 6) {
 				rotateDeg = 90;
-				glide.naturalHeight = img.naturalWidth;
-				glide.naturalWidth = img.naturalHeight;				
 			} else {
-				glide.naturalHeight = img.naturalHeight;
-				glide.naturalWidth = img.naturalWidth;
 				rotateDeg = 0;
 			}
+			
+			glide.naturalHeight = img.naturalHeight;
+			glide.naturalWidth = img.naturalWidth;
 			
 			console.log("orientation: " + orientation + " rotate: " + rotateDeg + " degrees");
 			
 			wh = window.innerHeight;
 			ww = window.innerWidth;
 		
-			if (glide.naturalHeight <= wh && glide.naturalWidth <= ww) {  // image fits
+			if (glide.naturalHeight <= wh && glide.naturalWidth <= ww) {
+				// original image fits
 				height = glide.naturalHeight;
 				width = glide.naturalWidth;
-			} else {    // scale
+			} else {    
+				// original image must be scaled
 				var widthScale = ww / glide.naturalWidth;
 				var heightScale = wh / glide.naturalHeight;
 				var scale = Math.min(widthScale, heightScale);
@@ -101,17 +102,48 @@ glide.calcImgPosAndDims = function (img, callback) {
 		
 			x = (ww - width) / 2;
 			y = (wh - height) / 2;
-			
+
+			// Calculate center around which an image can be rotated.
 			centerX = x + width / 2;
 			centerY = y + height / 2;
-		
+
+			tWidth = width;
+			tHeight = height;				
+
+			tx = x;
+			ty = y;
+						
+			// Calculate additional scale if image needs to be rotated. This scale  
+			// is applied after rotation to make the image fit to the window again.
+			if (rotateDeg == 90) {
+				if (width <= wh && height <= ww) {  
+					// rotated image fits
+				} else {    
+					// scale
+					var rotatedWidthScale = ww / height;
+					var rotatedHeightScale = wh / width;
+					tScale = Math.min(rotatedWidthScale, rotatedHeightScale);
+					tWidth = Math.round(width * tScale);
+					tHeight = Math.round(height * tScale);
+					tx = (ww - tWidth) / 2;
+					ty = (wh - tHeight) / 2;
+				}
+			}
+			
 			posAndDims = { "width": width,
 						   "height": height,
 						   "x": x,
 						   "y": y, 
 						   "centerX": centerX,
 						   "centerY": centerY,
-						   "rotateDeg": rotateDeg };
+						   "rotateDeg": rotateDeg,
+						   "tWidth": tWidth,
+						   "tHeight": tHeight,
+						   "tx": tx,
+						   "ty": ty
+						};
+						   						   
+		   console.log("w x h = (" + posAndDims.width + "," + posAndDims.height + ") (x,y) = (" + posAndDims.x + "," + posAndDims.y + ")");
 						   
 		   typeof callback === 'function' && callback(posAndDims);						   
 		});
@@ -225,11 +257,16 @@ glide.aniNone = function (nextPicSpec, pics) {
 			   .append("image")
 			   .attr("xlink:href", glide.picSrc)
 			   .attr("id", glide.picId)
-			   .attr("width", posAndDims.width)
-			   .attr("height", posAndDims.height)
 			   .attr("x", posAndDims.x)
 			   .attr("y", posAndDims.y)
-			   .attr("transform", "rotate(" + posAndDims.rotateDeg + " " + posAndDims.centerX + " " + posAndDims.centerY + ")");
+			   .attr("width", posAndDims.width)
+			   .attr("height", posAndDims.height)
+			   .attr("transform", "rotate(" + posAndDims.rotateDeg + " " + posAndDims.centerX + " " + posAndDims.centerY + ")")
+			   .transition()
+			   .attr("width", posAndDims.tWidth)
+			   .attr("height", posAndDims.tHeight)
+			   .attr("x", posAndDims.tx)
+			   .attr("y", posAndDims.ty);
 	
 			glide.triggerNextSlide(glide.param.showDuration);
         });
@@ -257,10 +294,10 @@ glide.aniZoomIn = function (nextPicSpec, pics) {
 			   .attr("transform", "rotate(" + posAndDims.rotateDeg + " " + posAndDims.centerX + " " + posAndDims.centerY + ")")
 			   .transition()
 			   .duration(glide.param.animDuration)
-			   .attr("width", posAndDims.width)
-			   .attr("height", posAndDims.height)
-			   .attr("x", posAndDims.x)
-			   .attr("y", posAndDims.y);
+			   .attr("width", posAndDims.tWidth)
+			   .attr("height", posAndDims.tHeight)
+			   .attr("x", posAndDims.tx)
+			   .attr("y", posAndDims.ty);
 	
 			glide.triggerNextSlide(glide.param.animDuration
 				+ glide.param.showDuration);
@@ -292,7 +329,10 @@ glide.aniSlideRight = function (nextPicSpec, pics) {
 			    .attr("transform", "rotate(" + posAndDims.rotateDeg + " " + posAndDims.centerX + " " + posAndDims.centerY + ")")				
 				.transition()
 				.duration(glide.param.animDuration)
-				.attr("x", posAndDims.x);
+                .attr("width", posAndDims.tWidth)
+ 			    .attr("height", posAndDims.tHeight)
+			    .attr("x", posAndDims.tx)
+			    .attr("y", posAndDims.ty);
 	
 				glide.triggerNextSlide(glide.param.animDuration
 					+ glide.param.showDuration);
@@ -324,7 +364,10 @@ glide.aniSlideTop = function (nextPicSpec, pics) {
 				.attr("transform", "rotate(" + posAndDims.rotateDeg + " " + posAndDims.centerX + " " + posAndDims.centerY + ")")				
 				.transition()
 				.duration(glide.param.animDuration)
-				.attr("y", posAndDims.y);
+                .attr("width", posAndDims.tWidth)
+ 			    .attr("height", posAndDims.tHeight)
+			    .attr("x", posAndDims.tx)
+			    .attr("y", posAndDims.ty);
 	
 			glide.triggerNextSlide(glide.param.animDuration
 				+ glide.param.showDuration);
@@ -339,24 +382,24 @@ glide.getSquareDims = function (picPosAndDims) {
     var positions = [];
     var sqWidth, numSqWide, numSqHigh, planeWidth, planeHeight;
 
-    if (picPosAndDims.width > picPosAndDims.height) {
+    if (picPosAndDims.tWidth > picPosAndDims.tHeight) {
         // fill complete width with squares
-        sqWidth = Math.ceil(picPosAndDims.width / squaresPerRow);
+        sqWidth = Math.ceil(picPosAndDims.tWidth / squaresPerRow);
         numSqWide = squaresPerRow;
-        numSqHigh = Math.ceil(picPosAndDims.height / sqWidth);
+        numSqHigh = Math.ceil(picPosAndDims.tHeight / sqWidth);
     } else {
         // fill complete height with squares
-        sqWidth = Math.ceil(picPosAndDims.height / squaresPerRow);
+        sqWidth = Math.ceil(picPosAndDims.tHeight / squaresPerRow);
         numSqHigh = squaresPerRow;
-        numSqWide = Math.ceil(picPosAndDims.width / sqWidth);
+        numSqWide = Math.ceil(picPosAndDims.tWidth / sqWidth);
     }
 
     planeWidth = sqWidth * numSqWide;
     planeHeight = sqWidth * numSqHigh;
 
     // calculate positions
-    var startX = picPosAndDims.x - ((planeWidth - picPosAndDims.width) / 2);
-    var startY = picPosAndDims.y - ((planeHeight - picPosAndDims.height) / 2);
+    var startX = picPosAndDims.tx - ((planeWidth - picPosAndDims.tWidth) / 2);
+    var startY = picPosAndDims.ty - ((planeHeight - picPosAndDims.tHeight) / 2);
     var count = 0;
     var xPos = startX;
     var yPos = startY;
@@ -393,7 +436,11 @@ glide.aniMemory = function (nextPicSpec, pics) {
 			   .attr("height", posAndDims.height)
 			   .attr("x", posAndDims.x)
 			   .attr("y", posAndDims.y)
-			   .attr("transform", "rotate(" + posAndDims.rotateDeg + " " + posAndDims.centerX + " " + posAndDims.centerY + ")");			   
+			   .attr("transform", "rotate(" + posAndDims.rotateDeg + " " + posAndDims.centerX + " " + posAndDims.centerY + ")")
+               .attr("width", posAndDims.tWidth)
+ 			   .attr("height", posAndDims.tHeight)
+			   .attr("x", posAndDims.tx)
+			   .attr("y", posAndDims.ty);			   
 	
 		   // (3) immediately draw squares
 		   var squareDims = glide.getSquareDims(posAndDims);
@@ -525,10 +572,10 @@ window.onresize = function(e) {
         // resize pic
         glide.calcImgPosAndDims(glide.img, function (posAndDims) {
 			glide.svg.selectAll("image")
-				   .attr("width", posAndDims.width)
-				   .attr("height", posAndDims.height)
-				   .attr("x", posAndDims.x)
-				   .attr("y", posAndDims.y);
+				   .attr("width", posAndDims.tWidth)
+				   .attr("height", posAndDims.tHeight)
+				   .attr("x", posAndDims.tx)
+				   .attr("y", posAndDims.ty);
         });
     }
 };
