@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/janis-lindholm/glide-slideshow#readme",
   "dependencies": {
+    "d3": "^4.4.1",
     "exif-js": "^2.3.0"
   }
 }
