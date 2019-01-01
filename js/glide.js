@@ -49,7 +49,18 @@ glide.nextPic = function () {
     } else {
         glide.i++;
     }
-    return [{"key": glide.i, "src": glide.dataset.pics[glide.i]}];
+
+    var src = glide.dataset.pics[glide.i];
+
+    var re = /\.(\w+)$/i;
+    var found = src.match(re);
+    var filetype = "unknown";
+    if (Array.isArray(found)) {
+        filetype = (found[1]).toLowerCase();
+    }
+
+    console.log("src: " + src + ", filetype: " + filetype);
+    return [{"key": glide.i, "src": src, "filetype": filetype}];
 };
 
 glide.prevPic = function () {
@@ -71,82 +82,82 @@ glide.calcImgPosAndDims = function (img, callback) {
     var orientation = -1;
 
     if (img != null) {  // new image
-		EXIF.getData(img, function() {
-			orientation = EXIF.getTag(this, "Orientation");
-			if (orientation == 6) {
-				rotateDeg = 90;
-			} else {
-				rotateDeg = 0;
-			}
-			
-			glide.naturalHeight = img.naturalHeight;
-			glide.naturalWidth = img.naturalWidth;
-			
-			console.log("orientation: " + orientation + " rotate: " + rotateDeg + " degrees");
-			
-			wh = window.innerHeight;
-			ww = window.innerWidth;
-		
-			if (glide.naturalHeight <= wh && glide.naturalWidth <= ww) {
-				// original image fits
-				height = glide.naturalHeight;
-				width = glide.naturalWidth;
-			} else {    
-				// original image must be scaled
-				var widthScale = ww / glide.naturalWidth;
-				var heightScale = wh / glide.naturalHeight;
-				var scale = Math.min(widthScale, heightScale);
-				width = Math.round(glide.naturalWidth * scale);
-				height = Math.round(glide.naturalHeight * scale);
-			}
-		
-			x = (ww - width) / 2;
-			y = (wh - height) / 2;
+        EXIF.getData(img, function() {
+            orientation = EXIF.getTag(this, "Orientation");
+            if (orientation == 6) {
+                rotateDeg = 90;
+            } else {
+                rotateDeg = 0;
+            }
 
-			// Calculate center around which an image can be rotated.
-			centerX = x + width / 2;
-			centerY = y + height / 2;
+            glide.naturalHeight = img.naturalHeight;
+            glide.naturalWidth = img.naturalWidth;
 
-			tWidth = width;
-			tHeight = height;				
+            console.log("orientation: " + orientation + ", rotate: " + rotateDeg + " degrees");
 
-			tx = x;
-			ty = y;
-						
-			// Calculate additional scale if image needs to be rotated. This scale  
-			// is applied after rotation to make the image fit to the window again.
-			if (rotateDeg == 90) {
-				if (width <= wh && height <= ww) {  
-					// rotated image fits
-				} else {    
-					// scale
-					var rotatedWidthScale = ww / height;
-					var rotatedHeightScale = wh / width;
-					tScale = Math.min(rotatedWidthScale, rotatedHeightScale);
-					tWidth = Math.round(width * tScale);
-					tHeight = Math.round(height * tScale);
-					tx = (ww - tWidth) / 2;
-					ty = (wh - tHeight) / 2;
-				}
-			}
-			
-			posAndDims = { "width": width,
-						   "height": height,
-						   "x": x,
-						   "y": y, 
-						   "centerX": centerX,
-						   "centerY": centerY,
-						   "rotateDeg": rotateDeg,
-						   "tWidth": tWidth,
-						   "tHeight": tHeight,
-						   "tx": tx,
-						   "ty": ty
-						};
-						   						   
-		   console.log("w x h = (" + posAndDims.width + "," + posAndDims.height + ") (x,y) = (" + posAndDims.x + "," + posAndDims.y + ")");
-						   
-		   typeof callback === 'function' && callback(posAndDims);						   
-		});
+            wh = window.innerHeight;
+            ww = window.innerWidth;
+
+            if (glide.naturalHeight <= wh && glide.naturalWidth <= ww) {
+                // original image fits
+                height = glide.naturalHeight;
+                width = glide.naturalWidth;
+            } else {
+                // original image must be scaled
+                var widthScale = ww / glide.naturalWidth;
+                var heightScale = wh / glide.naturalHeight;
+                var scale = Math.min(widthScale, heightScale);
+                width = Math.round(glide.naturalWidth * scale);
+                height = Math.round(glide.naturalHeight * scale);
+            }
+
+            x = (ww - width) / 2;
+            y = (wh - height) / 2;
+
+            // Calculate center around which an image can be rotated.
+            centerX = x + width / 2;
+            centerY = y + height / 2;
+
+            tWidth = width;
+            tHeight = height;
+
+            tx = x;
+            ty = y;
+
+            // Calculate additional scale if image needs to be rotated. This scale
+            // is applied after rotation to make the image fit to the window again.
+            if (rotateDeg == 90) {
+                if (width <= wh && height <= ww) {
+                    // rotated image fits
+                } else {
+                    // scale
+                    var rotatedWidthScale = ww / height;
+                    var rotatedHeightScale = wh / width;
+                    tScale = Math.min(rotatedWidthScale, rotatedHeightScale);
+                    tWidth = Math.round(width * tScale);
+                    tHeight = Math.round(height * tScale);
+                    tx = (ww - tWidth) / 2;
+                    ty = (wh - tHeight) / 2;
+                }
+            }
+
+            posAndDims = { "width": width,
+                           "height": height,
+                           "x": x,
+                           "y": y,
+                           "centerX": centerX,
+                           "centerY": centerY,
+                           "rotateDeg": rotateDeg,
+                           "tWidth": tWidth,
+                           "tHeight": tHeight,
+                           "tx": tx,
+                           "ty": ty
+                        };
+
+           console.log("w x h = (" + posAndDims.width + "," + posAndDims.height + ") (x,y) = (" + posAndDims.x + "," + posAndDims.y + ")");
+
+           typeof callback === 'function' && callback(posAndDims);
+        });
     }
 };
 
@@ -218,8 +229,11 @@ glide.showSlide = function (nextPicSpec) {
     var pics = glide.svg.selectAll("image")
                         .data(nextPicSpec, glide.key);
 
-    // show next pic using random or selected animation
-    if (glide.param.animation == "RANDOM") {
+    // show next pic using random or selected animation...
+    // ...but don't use any animation for GIF's
+    if (nextPicSpec[0].filetype == "gif") {
+        glide.aniNone(nextPicSpec, pics);
+    } else if (glide.param.animation == "RANDOM") {
         var anim = glide.getRandAnimation();
         glide.animations[anim](nextPicSpec, pics);
     } else if (glide.animations.hasOwnProperty(glide.param.animation)) {
@@ -253,22 +267,22 @@ glide.aniNone = function (nextPicSpec, pics) {
     glide.img = new Image();
     glide.img.onload = function () {
         glide.calcImgPosAndDims(glide.img, function (posAndDims) {
-			pics.enter()
-			   .append("image")
-			   .attr("xlink:href", glide.picSrc)
-			   .attr("id", glide.picId)
-			   .attr("x", posAndDims.x)
-			   .attr("y", posAndDims.y)
-			   .attr("width", posAndDims.width)
-			   .attr("height", posAndDims.height)
-			   .attr("transform", "rotate(" + posAndDims.rotateDeg + " " + posAndDims.centerX + " " + posAndDims.centerY + ")")
-			   .transition()
-			   .attr("width", posAndDims.tWidth)
-			   .attr("height", posAndDims.tHeight)
-			   .attr("x", posAndDims.tx)
-			   .attr("y", posAndDims.ty);
-	
-			glide.triggerNextSlide(glide.param.showDuration);
+            pics.enter()
+               .append("image")
+               .attr("xlink:href", glide.picSrc)
+               .attr("id", glide.picId)
+               .attr("x", posAndDims.x)
+               .attr("y", posAndDims.y)
+               .attr("width", posAndDims.width)
+               .attr("height", posAndDims.height)
+               .attr("transform", "rotate(" + posAndDims.rotateDeg + " " + posAndDims.centerX + " " + posAndDims.centerY + ")")
+               .transition()
+               .attr("width", posAndDims.tWidth)
+               .attr("height", posAndDims.tHeight)
+               .attr("x", posAndDims.tx)
+               .attr("y", posAndDims.ty);
+
+            glide.triggerNextSlide(glide.param.showDuration);
         });
     };
     glide.img.src = nextPicSpec[0].src;
@@ -283,24 +297,24 @@ glide.aniZoomIn = function (nextPicSpec, pics) {
     glide.img = new Image();
     glide.img.onload = function () {
         glide.calcImgPosAndDims(glide.img, function (posAndDims) {
-			pics.enter()
-			   .append("image")
-			   .attr("xlink:href", glide.picSrc)
-			   .attr("id", glide.picId)
-			   .attr("width", 1)
-			   .attr("height", 1)
-			   .attr("x", window.innerWidth / 2)
-			   .attr("y", window.innerHeight / 2)
-			   .attr("transform", "rotate(" + posAndDims.rotateDeg + " " + posAndDims.centerX + " " + posAndDims.centerY + ")")
-			   .transition()
-			   .duration(glide.param.animDuration)
-			   .attr("width", posAndDims.tWidth)
-			   .attr("height", posAndDims.tHeight)
-			   .attr("x", posAndDims.tx)
-			   .attr("y", posAndDims.ty);
-	
-			glide.triggerNextSlide(glide.param.animDuration
-				+ glide.param.showDuration);
+            pics.enter()
+               .append("image")
+               .attr("xlink:href", glide.picSrc)
+               .attr("id", glide.picId)
+               .attr("width", 1)
+               .attr("height", 1)
+               .attr("x", window.innerWidth / 2)
+               .attr("y", window.innerHeight / 2)
+               .attr("transform", "rotate(" + posAndDims.rotateDeg + " " + posAndDims.centerX + " " + posAndDims.centerY + ")")
+               .transition()
+               .duration(glide.param.animDuration)
+               .attr("width", posAndDims.tWidth)
+               .attr("height", posAndDims.tHeight)
+               .attr("x", posAndDims.tx)
+               .attr("y", posAndDims.ty);
+
+            glide.triggerNextSlide(glide.param.animDuration
+                + glide.param.showDuration);
         });
     };
     glide.img.src = nextPicSpec[0].src;
@@ -318,24 +332,24 @@ glide.aniSlideRight = function (nextPicSpec, pics) {
     glide.img = new Image();
     glide.img.onload = function () {
         glide.calcImgPosAndDims(glide.img, function (posAndDims) {
-			pics.enter()
-				.append("image")
-				.attr("xlink:href", glide.picSrc)
-				.attr("id", glide.picId)
-				.attr("width", posAndDims.width)
-				.attr("height", posAndDims.height)
-				.attr("x", 0 - posAndDims.width)
-				.attr("y", posAndDims.y)
-			    .attr("transform", "rotate(" + posAndDims.rotateDeg + " " + posAndDims.centerX + " " + posAndDims.centerY + ")")				
-				.transition()
-				.duration(glide.param.animDuration)
+            pics.enter()
+                .append("image")
+                .attr("xlink:href", glide.picSrc)
+                .attr("id", glide.picId)
+                .attr("width", posAndDims.width)
+                .attr("height", posAndDims.height)
+                .attr("x", 0 - posAndDims.width)
+                .attr("y", posAndDims.y)
+                .attr("transform", "rotate(" + posAndDims.rotateDeg + " " + posAndDims.centerX + " " + posAndDims.centerY + ")")
+                .transition()
+                .duration(glide.param.animDuration)
                 .attr("width", posAndDims.tWidth)
- 			    .attr("height", posAndDims.tHeight)
-			    .attr("x", posAndDims.tx)
-			    .attr("y", posAndDims.ty);
-	
-				glide.triggerNextSlide(glide.param.animDuration
-					+ glide.param.showDuration);
+                .attr("height", posAndDims.tHeight)
+                .attr("x", posAndDims.tx)
+                .attr("y", posAndDims.ty);
+
+                glide.triggerNextSlide(glide.param.animDuration
+                    + glide.param.showDuration);
         });
     };
     glide.img.src = nextPicSpec[0].src;
@@ -353,24 +367,24 @@ glide.aniSlideTop = function (nextPicSpec, pics) {
     glide.img = new Image();
     glide.img.onload = function () {
         glide.calcImgPosAndDims(glide.img, function (posAndDims) {
-			pics.enter()
-				.append("image")
-				.attr("xlink:href", glide.picSrc)
-				.attr("id", glide.picId)
-				.attr("width", posAndDims.width)
-				.attr("height", posAndDims.height)
-				.attr("x", posAndDims.x)
-				.attr("y", 0 - posAndDims.height)
-				.attr("transform", "rotate(" + posAndDims.rotateDeg + " " + posAndDims.centerX + " " + posAndDims.centerY + ")")				
-				.transition()
-				.duration(glide.param.animDuration)
+            pics.enter()
+                .append("image")
+                .attr("xlink:href", glide.picSrc)
+                .attr("id", glide.picId)
+                .attr("width", posAndDims.width)
+                .attr("height", posAndDims.height)
+                .attr("x", posAndDims.x)
+                .attr("y", 0 - posAndDims.height)
+                .attr("transform", "rotate(" + posAndDims.rotateDeg + " " + posAndDims.centerX + " " + posAndDims.centerY + ")")
+                .transition()
+                .duration(glide.param.animDuration)
                 .attr("width", posAndDims.tWidth)
- 			    .attr("height", posAndDims.tHeight)
-			    .attr("x", posAndDims.tx)
-			    .attr("y", posAndDims.ty);
-	
-			glide.triggerNextSlide(glide.param.animDuration
-				+ glide.param.showDuration);
+                .attr("height", posAndDims.tHeight)
+                .attr("x", posAndDims.tx)
+                .attr("y", posAndDims.ty);
+
+            glide.triggerNextSlide(glide.param.animDuration
+                + glide.param.showDuration);
         });
     };
     glide.img.src = nextPicSpec[0].src;
@@ -428,69 +442,69 @@ glide.aniMemory = function (nextPicSpec, pics) {
     glide.img = new Image();
     glide.img.onload = function () {
         glide.calcImgPosAndDims(glide.img, function (posAndDims) {
-			pics.enter()
-			   .append("image")
-			   .attr("xlink:href", glide.picSrc)
-			   .attr("id", glide.picId)
-			   .attr("width", posAndDims.width)
-			   .attr("height", posAndDims.height)
-			   .attr("x", posAndDims.x)
-			   .attr("y", posAndDims.y)
-			   .attr("transform", "rotate(" + posAndDims.rotateDeg + " " + posAndDims.centerX + " " + posAndDims.centerY + ")")
+            pics.enter()
+               .append("image")
+               .attr("xlink:href", glide.picSrc)
+               .attr("id", glide.picId)
+               .attr("width", posAndDims.width)
+               .attr("height", posAndDims.height)
+               .attr("x", posAndDims.x)
+               .attr("y", posAndDims.y)
+               .attr("transform", "rotate(" + posAndDims.rotateDeg + " " + posAndDims.centerX + " " + posAndDims.centerY + ")")
                .attr("width", posAndDims.tWidth)
- 			   .attr("height", posAndDims.tHeight)
-			   .attr("x", posAndDims.tx)
-			   .attr("y", posAndDims.ty);			   
-	
-		   // (3) immediately draw squares
-		   var squareDims = glide.getSquareDims(posAndDims);
-		   var squareData = squareDims.squares;
-		   var squareShowTime = 100;
-		   var animDuration = squareData.length * squareShowTime;
-		   glide.svg.selectAll("rect")
-					.data(squareData, glide.key)
-					.enter()
-					.append("rect")
-					.attr("width", squareDims.width)
-					.attr("height", squareDims.width)
-					.attr("x", function (d) { return d.x; })
-					.attr("y", function (d) { return d.y; })
-					.attr("id", function (d) { return "sq_" + d.key; })
-					.attr("stroke", glide.param.bgColor)
-					.attr("fill", glide.param.bgColor);
-	
-		   // (4) define animation stopper
-		   glide.cancelAnimation = function () {
-			   if (glide.animIntervalId != null) {
-				   clearInterval(glide.animIntervalId);
-				   glide.animIntervalId = null;
-	
-				   glide.svg.selectAll("rect")
-							.data([], glide.key)
-							.exit()
-							.remove();
-	
-				   glide.cancelAnimation = null;
-			   }
-		   };
-	
-		   // (5) start animation: remove squares (one by one)
-		   glide.animIntervalId = setInterval(function () {
-				   if ( squareData.length > 0 ) {
-					   glide.randSplice(squareData);
-					   glide.svg.selectAll("rect")
-							 .data(squareData, glide.key)
-							 .exit()
-							 .remove();
-				   } else {
-					   clearInterval(glide.animIntervalId);
-					   glide.animIntervalId = null;
-					   glide.cancelAnimation = null;
-				   }
-		   },
-		   squareShowTime);
-	
-		   glide.triggerNextSlide(animDuration + glide.param.showDuration);
+               .attr("height", posAndDims.tHeight)
+               .attr("x", posAndDims.tx)
+               .attr("y", posAndDims.ty);
+
+           // (3) immediately draw squares
+           var squareDims = glide.getSquareDims(posAndDims);
+           var squareData = squareDims.squares;
+           var squareShowTime = 100;
+           var animDuration = squareData.length * squareShowTime;
+           glide.svg.selectAll("rect")
+                    .data(squareData, glide.key)
+                    .enter()
+                    .append("rect")
+                    .attr("width", squareDims.width)
+                    .attr("height", squareDims.width)
+                    .attr("x", function (d) { return d.x; })
+                    .attr("y", function (d) { return d.y; })
+                    .attr("id", function (d) { return "sq_" + d.key; })
+                    .attr("stroke", glide.param.bgColor)
+                    .attr("fill", glide.param.bgColor);
+
+           // (4) define animation stopper
+           glide.cancelAnimation = function () {
+               if (glide.animIntervalId != null) {
+                   clearInterval(glide.animIntervalId);
+                   glide.animIntervalId = null;
+
+                   glide.svg.selectAll("rect")
+                            .data([], glide.key)
+                            .exit()
+                            .remove();
+
+                   glide.cancelAnimation = null;
+               }
+           };
+
+           // (5) start animation: remove squares (one by one)
+           glide.animIntervalId = setInterval(function () {
+                   if ( squareData.length > 0 ) {
+                       glide.randSplice(squareData);
+                       glide.svg.selectAll("rect")
+                             .data(squareData, glide.key)
+                             .exit()
+                             .remove();
+                   } else {
+                       clearInterval(glide.animIntervalId);
+                       glide.animIntervalId = null;
+                       glide.cancelAnimation = null;
+                   }
+           },
+           squareShowTime);
+
+           glide.triggerNextSlide(animDuration + glide.param.showDuration);
         });
     };
     glide.img.src = nextPicSpec[0].src;
@@ -571,11 +585,11 @@ window.onresize = function(e) {
 
         // resize pic
         glide.calcImgPosAndDims(glide.img, function (posAndDims) {
-			glide.svg.selectAll("image")
-				   .attr("width", posAndDims.tWidth)
-				   .attr("height", posAndDims.tHeight)
-				   .attr("x", posAndDims.tx)
-				   .attr("y", posAndDims.ty);
+            glide.svg.selectAll("image")
+                   .attr("width", posAndDims.tWidth)
+                   .attr("height", posAndDims.tHeight)
+                   .attr("x", posAndDims.tx)
+                   .attr("y", posAndDims.ty);
         });
     }
 };
