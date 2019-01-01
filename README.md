@@ -3,17 +3,35 @@ A simple browser based slideshow powered by [D3.js](http://d3js.org).
 
 **Warning: This software is in early alpha state.**
 
-##Quickstart
+## Quickstart
+
+*Load needed dependencies*
+
+The slideshow requires D3 and exif-js. Type
+
+```bash
+    cd js
+```
+
+followed by 
+
+```bash
+    npm install
+```
+
+to load and install required dependencies.
+
+*Prepare your slideshow*
 
 Five steps to launch a browser based slideshow:
 
 1. Drop your pictures into the `./pics` subfolder.
 2. Create your own `pics.json`. (you can use `pics.example.json` as a template)
 3. List pictures in your `pics.json`. This defines the order in which pics are played back.
-4. Open the `slideshow.html` file in your web browser. (currently only Firefox is supported)
-5. Lean back and watch your slideshow.
+4. Open the `index.html` file in your web browser. (currently only Firefox is supported)
+5. Lean back and enojoy your slideshow.
 
-##Configuration
+## Configuration
 
 All configuration settings are made in the `pics.json` file.
 

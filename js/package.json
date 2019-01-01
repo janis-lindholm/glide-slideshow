@@ -1,0 +1,27 @@
+{
+  "name": "glide-slideshow",
+  "version": "1.0.0",
+  "description": "simple D3 based slideshow",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/janis-lindholm/glide-slideshow.git"
+  },
+  "keywords": [
+    "slideshow",
+    "D3"
+  ],
+  "author": "Janis Lindholm",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/janis-lindholm/glide-slideshow/issues"
+  },
+  "homepage": "https://github.com/janis-lindholm/glide-slideshow#readme",
+  "dependencies": {
+    "d3": "^4.4.1",
+    "exif-js": "^2.3.0"
+  }
+}
