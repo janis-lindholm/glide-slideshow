@@ -1,6 +1,6 @@
-var glide_ui = glide_ui || {};
+var portret_ui = portret_ui || {};
 
-glide_ui.data = {
+portret_ui.data = {
     name: "",
     autoForward: false,
     showDuration: 5,
@@ -8,7 +8,7 @@ glide_ui.data = {
     animDuration: 2
 };
 
-glide_ui.vm = new Vue({
+portret_ui.vm = new Vue({
     el: "#vm-root",
-    data: glide_ui.data
+    data: portret_ui.data
 });
