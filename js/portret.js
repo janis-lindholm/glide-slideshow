@@ -1,40 +1,40 @@
-var glide = glide || {};
+var portret = portret || {};
 
 /******************************************************************************
  *** Slideshow Param Defaults ***
  *****************************************************************************/
-glide.param = {};
-glide.param.name = "Slideshow";
-glide.param.showDuration = 5000;
-glide.param.animDuration = 2000;
-glide.param.autoForward = true;
-glide.param.bgColor = "#1e2426";
-glide.param.animation = "NONE";
-glide.param.picsJsonURI = "pics.json";   // pic catalog URI
+portret.param = {};
+portret.param.name = "Slideshow";
+portret.param.showDuration = 5000;
+portret.param.animDuration = 2000;
+portret.param.autoForward = true;
+portret.param.bgColor = "#1e2426";
+portret.param.animation = "NONE";
+portret.param.picsJsonURI = "pics.json";   // pic catalog URI
 
 /******************************************************************************
  *** Internal Vars ***
  *****************************************************************************/
-glide.showTimeoutId = null;
-glide.lastAnimation = null;
-glide.animIntervalId = null;
-glide.cancelAnimation = null;
-glide.animations = {};
+portret.showTimeoutId = null;
+portret.lastAnimation = null;
+portret.animIntervalId = null;
+portret.cancelAnimation = null;
+portret.animations = {};
 
 /******************************************************************************
  *** Helper Functions ***
  *****************************************************************************/
-glide.isScalar = function (obj) {
+portret.isScalar = function (obj) {
     return (/string|number|boolean/).test(typeof obj);
 };
 
-glide.randSplice = function(array) {
+portret.randSplice = function(array) {
     var i = Math.floor(Math.random() * array.length);
     var removed = array.splice(i, 1);
     return removed;
 };
 
-glide.randKey = function(obj) {
+portret.randKey = function(obj) {
     var keys = Object.keys(obj);
     var i = Math.floor(Math.random() * keys.length);
     return keys[i];
@@ -43,14 +43,14 @@ glide.randKey = function(obj) {
 /******************************************************************************
  *** Glide Functions ***
  *****************************************************************************/
-glide.nextPic = function () {
-    if (glide.i == glide.max) {
-        glide.i = 0;
+portret.nextPic = function () {
+    if (portret.i == portret.max) {
+        portret.i = 0;
     } else {
-        glide.i++;
+        portret.i++;
     }
 
-    var src = glide.dataset.pics[glide.i];
+    var src = portret.dataset.pics[portret.i];
 
     var re = /\.(\w+)$/i;
     var found = src.match(re);
@@ -60,23 +60,23 @@ glide.nextPic = function () {
     }
 
     console.log("src: " + src + ", filetype: " + filetype);
-    return [{"key": glide.i, "src": src, "filetype": filetype}];
+    return [{"key": portret.i, "src": src, "filetype": filetype}];
 };
 
-glide.prevPic = function () {
-    if (glide.i === 0) {
-        glide.i = glide.max;
+portret.prevPic = function () {
+    if (portret.i === 0) {
+        portret.i = portret.max;
     } else {
-        glide.i--;
+        portret.i--;
     }
-    return [{"key": glide.i, "src": glide.dataset.pics[glide.i]}];
+    return [{"key": portret.i, "src": portret.dataset.pics[portret.i]}];
 };
 
-glide.key = function (d) {
+portret.key = function (d) {
     return d.key;
 };
 
-glide.calcImgPosAndDims = function (img, callback) {
+portret.calcImgPosAndDims = function (img, callback) {
 
     var wh, ww, height, width, x, y, centerX, centerY, rotateDeg, tHeight, tWidth, tx, ty, posAndDims;
     var orientation = -1;
@@ -90,25 +90,25 @@ glide.calcImgPosAndDims = function (img, callback) {
                 rotateDeg = 0;
             }
 
-            glide.naturalHeight = img.naturalHeight;
-            glide.naturalWidth = img.naturalWidth;
+            portret.naturalHeight = img.naturalHeight;
+            portret.naturalWidth = img.naturalWidth;
 
             console.log("orientation: " + orientation + ", rotate: " + rotateDeg + " degrees");
 
             wh = window.innerHeight;
             ww = window.innerWidth;
 
-            if (glide.naturalHeight <= wh && glide.naturalWidth <= ww) {
+            if (portret.naturalHeight <= wh && portret.naturalWidth <= ww) {
                 // original image fits
-                height = glide.naturalHeight;
-                width = glide.naturalWidth;
+                height = portret.naturalHeight;
+                width = portret.naturalWidth;
             } else {
                 // original image must be scaled
-                var widthScale = ww / glide.naturalWidth;
-                var heightScale = wh / glide.naturalHeight;
+                var widthScale = ww / portret.naturalWidth;
+                var heightScale = wh / portret.naturalHeight;
                 var scale = Math.min(widthScale, heightScale);
-                width = Math.round(glide.naturalWidth * scale);
-                height = Math.round(glide.naturalHeight * scale);
+                width = Math.round(portret.naturalWidth * scale);
+                height = Math.round(portret.naturalHeight * scale);
             }
 
             x = (ww - width) / 2;
@@ -161,13 +161,13 @@ glide.calcImgPosAndDims = function (img, callback) {
     }
 };
 
-glide.updateParams = function () {
-    Object.keys(glide.param).forEach(function(key, index) {
-        if (glide.dataset.hasOwnProperty(key)) {
-            var val = glide.dataset[key];
-            if (glide.isScalar(val)) {
+portret.updateParams = function () {
+    Object.keys(portret.param).forEach(function(key, index) {
+        if (portret.dataset.hasOwnProperty(key)) {
+            var val = portret.dataset[key];
+            if (portret.isScalar(val)) {
                 console.log("Using custom slideshow param '" + key + "' : " + val);
-                glide.param[key] = val;
+                portret.param[key] = val;
             } else {
                 console.log("Ignoring invalid slideshow param '" + key + "'.");
             }
@@ -175,102 +175,102 @@ glide.updateParams = function () {
     });
 };
 
-glide.getRandAnimation = function () {
-    var anim = glide.lastAnimation;
-    while (anim == glide.lastAnimation) {
-        anim = glide.randKey(glide.animations);
+portret.getRandAnimation = function () {
+    var anim = portret.lastAnimation;
+    while (anim == portret.lastAnimation) {
+        anim = portret.randKey(portret.animations);
     }
-    glide.lastAnimation = anim;
+    portret.lastAnimation = anim;
     return anim;
 };
 
-glide.setupCanvas = function () {
+portret.setupCanvas = function () {
     d3.select("title")
-      .text(glide.param.name);
+      .text(portret.param.name);
 
-    glide.svg = d3.select("body")
-                  .attr("style", "background-color: " + glide.param.bgColor)
+    portret.svg = d3.select("body")
+                  .attr("style", "background-color: " + portret.param.bgColor)
                   .append("svg")
                   .attr("width", window.innerWidth)
                   .attr("height", window.innerHeight)
                   .attr("id", "canvas");
 };
 
-glide.nextSlide = function () {
+portret.nextSlide = function () {
     // get pic...
-    var nextPicSpec = glide.nextPic();
+    var nextPicSpec = portret.nextPic();
 
     // show slide...
-    glide.showSlide(nextPicSpec);
+    portret.showSlide(nextPicSpec);
 };
 
-glide.prevSlide = function () {
+portret.prevSlide = function () {
     // get pic...
-    var nextPicSpec = glide.prevPic();
+    var nextPicSpec = portret.prevPic();
 
     // show slide...
-    glide.showSlide(nextPicSpec);
+    portret.showSlide(nextPicSpec);
 };
 
-glide.showSlide = function (nextPicSpec) {
+portret.showSlide = function (nextPicSpec) {
 
     // cancel old timeout
-    if (glide.param.autoForward
-        && glide.showTimeoutId != null) {
-        clearTimeout(glide.showTimeoutId);
+    if (portret.param.autoForward
+        && portret.showTimeoutId != null) {
+        clearTimeout(portret.showTimeoutId);
     }
 
     // cancel old animation
-    if (glide.cancelAnimation != null) {
-        glide.cancelAnimation();
+    if (portret.cancelAnimation != null) {
+        portret.cancelAnimation();
     }
 
     // select all image objects
-    var pics = glide.svg.selectAll("image")
-                        .data(nextPicSpec, glide.key);
+    var pics = portret.svg.selectAll("image")
+                        .data(nextPicSpec, portret.key);
 
     // show next pic using random or selected animation...
     // ...but don't use any animation for GIF's
     if (nextPicSpec[0].filetype == "gif") {
-        glide.aniNone(nextPicSpec, pics);
-    } else if (glide.param.animation == "RANDOM") {
-        var anim = glide.getRandAnimation();
-        glide.animations[anim](nextPicSpec, pics);
-    } else if (glide.animations.hasOwnProperty(glide.param.animation)) {
-        glide.animations[glide.param.animation](nextPicSpec, pics);
+        portret.aniNone(nextPicSpec, pics);
+    } else if (portret.param.animation == "RANDOM") {
+        var anim = portret.getRandAnimation();
+        portret.animations[anim](nextPicSpec, pics);
+    } else if (portret.animations.hasOwnProperty(portret.param.animation)) {
+        portret.animations[portret.param.animation](nextPicSpec, pics);
     } else {    // no animation
-        glide.aniNone(nextPicSpec, pics);
+        portret.aniNone(nextPicSpec, pics);
     }
 };
 
-glide.picId = function (d) { return "pic_" + d.key; };
+portret.picId = function (d) { return "pic_" + d.key; };
 
-glide.picSrc = function (d) { return d.src; };
+portret.picSrc = function (d) { return d.src; };
 
-glide.triggerNextSlide = function (millis) {
-    if (glide.param.autoForward) {
-        glide.showTimeoutId = setTimeout(glide.nextSlide, millis);
+portret.triggerNextSlide = function (millis) {
+    if (portret.param.autoForward) {
+        portret.showTimeoutId = setTimeout(portret.nextSlide, millis);
     }
 };
 
-glide.aniNotImplemented = function (nextPicSpec, pics) {
+portret.aniNotImplemented = function (nextPicSpec, pics) {
     console.log("This animation is not yet implemented!");
-    glide.aniNone(nextPicSpec, pics);
+    portret.aniNone(nextPicSpec, pics);
 };
 
-glide.aniNone = function (nextPicSpec, pics) {
+portret.aniNone = function (nextPicSpec, pics) {
     // (1) remove old pic (if exists)
     pics.exit()
         .remove();
 
     // (2) load new pic
-    glide.img = new Image();
-    glide.img.onload = function () {
-        glide.calcImgPosAndDims(glide.img, function (posAndDims) {
+    portret.img = new Image();
+    portret.img.onload = function () {
+        portret.calcImgPosAndDims(portret.img, function (posAndDims) {
             pics.enter()
                .append("image")
-               .attr("xlink:href", glide.picSrc)
-               .attr("id", glide.picId)
+               .attr("xlink:href", portret.picSrc)
+               .attr("id", portret.picId)
                .attr("x", posAndDims.x)
                .attr("y", posAndDims.y)
                .attr("width", posAndDims.width)
@@ -282,115 +282,115 @@ glide.aniNone = function (nextPicSpec, pics) {
                .attr("x", posAndDims.tx)
                .attr("y", posAndDims.ty);
 
-            glide.triggerNextSlide(glide.param.showDuration);
+            portret.triggerNextSlide(portret.param.showDuration);
         });
     };
-    glide.img.src = nextPicSpec[0].src;
+    portret.img.src = nextPicSpec[0].src;
 };
 
-glide.aniZoomIn = function (nextPicSpec, pics) {
+portret.aniZoomIn = function (nextPicSpec, pics) {
     // (1) remove old pic (if exists)
     pics.exit()
         .remove();
 
     // (2) load new pic
-    glide.img = new Image();
-    glide.img.onload = function () {
-        glide.calcImgPosAndDims(glide.img, function (posAndDims) {
+    portret.img = new Image();
+    portret.img.onload = function () {
+        portret.calcImgPosAndDims(portret.img, function (posAndDims) {
             pics.enter()
                .append("image")
-               .attr("xlink:href", glide.picSrc)
-               .attr("id", glide.picId)
+               .attr("xlink:href", portret.picSrc)
+               .attr("id", portret.picId)
                .attr("width", 1)
                .attr("height", 1)
                .attr("x", window.innerWidth / 2)
                .attr("y", window.innerHeight / 2)
                .attr("transform", "rotate(" + posAndDims.rotateDeg + " " + posAndDims.centerX + " " + posAndDims.centerY + ")")
                .transition()
-               .duration(glide.param.animDuration)
+               .duration(portret.param.animDuration)
                .attr("width", posAndDims.tWidth)
                .attr("height", posAndDims.tHeight)
                .attr("x", posAndDims.tx)
                .attr("y", posAndDims.ty);
 
-            glide.triggerNextSlide(glide.param.animDuration
-                + glide.param.showDuration);
+            portret.triggerNextSlide(portret.param.animDuration
+                + portret.param.showDuration);
         });
     };
-    glide.img.src = nextPicSpec[0].src;
+    portret.img.src = nextPicSpec[0].src;
 };
 
-glide.aniSlideRight = function (nextPicSpec, pics) {
+portret.aniSlideRight = function (nextPicSpec, pics) {
     // (1) remove old pic (if exists)
     pics.exit()
         .transition()
-        .duration(glide.param.animDuration)
+        .duration(portret.param.animDuration)
         .attr("x", window.innerWidth)
         .remove();
 
     // (2) load new pic
-    glide.img = new Image();
-    glide.img.onload = function () {
-        glide.calcImgPosAndDims(glide.img, function (posAndDims) {
+    portret.img = new Image();
+    portret.img.onload = function () {
+        portret.calcImgPosAndDims(portret.img, function (posAndDims) {
             pics.enter()
                 .append("image")
-                .attr("xlink:href", glide.picSrc)
-                .attr("id", glide.picId)
+                .attr("xlink:href", portret.picSrc)
+                .attr("id", portret.picId)
                 .attr("width", posAndDims.width)
                 .attr("height", posAndDims.height)
                 .attr("x", 0 - posAndDims.width)
                 .attr("y", posAndDims.y)
                 .attr("transform", "rotate(" + posAndDims.rotateDeg + " " + posAndDims.centerX + " " + posAndDims.centerY + ")")
                 .transition()
-                .duration(glide.param.animDuration)
+                .duration(portret.param.animDuration)
                 .attr("width", posAndDims.tWidth)
                 .attr("height", posAndDims.tHeight)
                 .attr("x", posAndDims.tx)
                 .attr("y", posAndDims.ty);
 
-                glide.triggerNextSlide(glide.param.animDuration
-                    + glide.param.showDuration);
+                portret.triggerNextSlide(portret.param.animDuration
+                    + portret.param.showDuration);
         });
     };
-    glide.img.src = nextPicSpec[0].src;
+    portret.img.src = nextPicSpec[0].src;
 };
 
-glide.aniSlideTop = function (nextPicSpec, pics) {
+portret.aniSlideTop = function (nextPicSpec, pics) {
     // (1) remove old pic (if exists)
     pics.exit()
         .transition()
-        .duration(glide.param.animDuration)
+        .duration(portret.param.animDuration)
         .attr("y", window.innerHeight)
         .remove();
 
     // (2) load new pic
-    glide.img = new Image();
-    glide.img.onload = function () {
-        glide.calcImgPosAndDims(glide.img, function (posAndDims) {
+    portret.img = new Image();
+    portret.img.onload = function () {
+        portret.calcImgPosAndDims(portret.img, function (posAndDims) {
             pics.enter()
                 .append("image")
-                .attr("xlink:href", glide.picSrc)
-                .attr("id", glide.picId)
+                .attr("xlink:href", portret.picSrc)
+                .attr("id", portret.picId)
                 .attr("width", posAndDims.width)
                 .attr("height", posAndDims.height)
                 .attr("x", posAndDims.x)
                 .attr("y", 0 - posAndDims.height)
                 .attr("transform", "rotate(" + posAndDims.rotateDeg + " " + posAndDims.centerX + " " + posAndDims.centerY + ")")
                 .transition()
-                .duration(glide.param.animDuration)
+                .duration(portret.param.animDuration)
                 .attr("width", posAndDims.tWidth)
                 .attr("height", posAndDims.tHeight)
                 .attr("x", posAndDims.tx)
                 .attr("y", posAndDims.ty);
 
-            glide.triggerNextSlide(glide.param.animDuration
-                + glide.param.showDuration);
+            portret.triggerNextSlide(portret.param.animDuration
+                + portret.param.showDuration);
         });
     };
-    glide.img.src = nextPicSpec[0].src;
+    portret.img.src = nextPicSpec[0].src;
 };
 
-glide.getSquareDims = function (picPosAndDims) {
+portret.getSquareDims = function (picPosAndDims) {
 
     var squaresPerRow = 8;
     var positions = [];
@@ -433,19 +433,19 @@ glide.getSquareDims = function (picPosAndDims) {
     };
 };
 
-glide.aniMemory = function (nextPicSpec, pics) {
+portret.aniMemory = function (nextPicSpec, pics) {
     // (1) remove old pic (if exists)
     pics.exit()
         .remove();
 
     // (2) load new pic
-    glide.img = new Image();
-    glide.img.onload = function () {
-        glide.calcImgPosAndDims(glide.img, function (posAndDims) {
+    portret.img = new Image();
+    portret.img.onload = function () {
+        portret.calcImgPosAndDims(portret.img, function (posAndDims) {
             pics.enter()
                .append("image")
-               .attr("xlink:href", glide.picSrc)
-               .attr("id", glide.picId)
+               .attr("xlink:href", portret.picSrc)
+               .attr("id", portret.picId)
                .attr("width", posAndDims.width)
                .attr("height", posAndDims.height)
                .attr("x", posAndDims.x)
@@ -457,12 +457,12 @@ glide.aniMemory = function (nextPicSpec, pics) {
                .attr("y", posAndDims.ty);
 
            // (3) immediately draw squares
-           var squareDims = glide.getSquareDims(posAndDims);
+           var squareDims = portret.getSquareDims(posAndDims);
            var squareData = squareDims.squares;
            var squareShowTime = 100;
            var animDuration = squareData.length * squareShowTime;
-           glide.svg.selectAll("rect")
-                    .data(squareData, glide.key)
+           portret.svg.selectAll("rect")
+                    .data(squareData, portret.key)
                     .enter()
                     .append("rect")
                     .attr("width", squareDims.width)
@@ -470,67 +470,67 @@ glide.aniMemory = function (nextPicSpec, pics) {
                     .attr("x", function (d) { return d.x; })
                     .attr("y", function (d) { return d.y; })
                     .attr("id", function (d) { return "sq_" + d.key; })
-                    .attr("stroke", glide.param.bgColor)
-                    .attr("fill", glide.param.bgColor);
+                    .attr("stroke", portret.param.bgColor)
+                    .attr("fill", portret.param.bgColor);
 
            // (4) define animation stopper
-           glide.cancelAnimation = function () {
-               if (glide.animIntervalId != null) {
-                   clearInterval(glide.animIntervalId);
-                   glide.animIntervalId = null;
+           portret.cancelAnimation = function () {
+               if (portret.animIntervalId != null) {
+                   clearInterval(portret.animIntervalId);
+                   portret.animIntervalId = null;
 
-                   glide.svg.selectAll("rect")
-                            .data([], glide.key)
+                   portret.svg.selectAll("rect")
+                            .data([], portret.key)
                             .exit()
                             .remove();
 
-                   glide.cancelAnimation = null;
+                   portret.cancelAnimation = null;
                }
            };
 
            // (5) start animation: remove squares (one by one)
-           glide.animIntervalId = setInterval(function () {
+           portret.animIntervalId = setInterval(function () {
                    if ( squareData.length > 0 ) {
-                       glide.randSplice(squareData);
-                       glide.svg.selectAll("rect")
-                             .data(squareData, glide.key)
+                       portret.randSplice(squareData);
+                       portret.svg.selectAll("rect")
+                             .data(squareData, portret.key)
                              .exit()
                              .remove();
                    } else {
-                       clearInterval(glide.animIntervalId);
-                       glide.animIntervalId = null;
-                       glide.cancelAnimation = null;
+                       clearInterval(portret.animIntervalId);
+                       portret.animIntervalId = null;
+                       portret.cancelAnimation = null;
                    }
            },
            squareShowTime);
 
-           glide.triggerNextSlide(animDuration + glide.param.showDuration);
+           portret.triggerNextSlide(animDuration + portret.param.showDuration);
         });
     };
-    glide.img.src = nextPicSpec[0].src;
+    portret.img.src = nextPicSpec[0].src;
 };
 
-glide.registerAnimations = function () {
-    glide.animations.ZOOM_IN = glide.aniZoomIn;
-    glide.animations.SLIDE_RIGHT = glide.aniSlideRight;
-    glide.animations.SLIDE_TOP = glide.aniSlideTop;
-    glide.animations.MEMORY = glide.aniMemory;
+portret.registerAnimations = function () {
+    portret.animations.ZOOM_IN = portret.aniZoomIn;
+    portret.animations.SLIDE_RIGHT = portret.aniSlideRight;
+    portret.animations.SLIDE_TOP = portret.aniSlideTop;
+    portret.animations.MEMORY = portret.aniMemory;
 };
 
-glide.startShow = function (data) {
-    glide.dataset = data;
-    glide.max = glide.dataset.pics.length - 1;
-    glide.i = -1;
-    glide.updateParams();
-    glide.registerAnimations();
-    glide.setupCanvas();
-    glide.nextSlide();
+portret.startShow = function (data) {
+    portret.dataset = data;
+    portret.max = portret.dataset.pics.length - 1;
+    portret.i = -1;
+    portret.updateParams();
+    portret.registerAnimations();
+    portret.setupCanvas();
+    portret.nextSlide();
 };
 
-glide.stopShow = function () {
-    if (glide.showTimeoutId != null) {
-        clearTimeout(glide.showTimeoutId);
-        glide.showTimeoutId = null;
+portret.stopShow = function () {
+    if (portret.showTimeoutId != null) {
+        clearTimeout(portret.showTimeoutId);
+        portret.showTimeoutId = null;
     }
 };
 
@@ -539,7 +539,7 @@ glide.stopShow = function () {
  *****************************************************************************/
  // On click on body:
 d3.select("body").on("click", function(e) {
-    glide.nextSlide();
+    portret.nextSlide();
 });
 
 // On key press:
@@ -547,28 +547,28 @@ document.onkeypress = function (e) {
     e = e || window.event;
     switch (e.key) {
     case " ":   // Space
-        glide.nextSlide();
+        portret.nextSlide();
       break;
     case "Backspace":
-      glide.prevSlide();
+      portret.prevSlide();
       break;
     case "ArrowDown":
-      glide.prevSlide();
+      portret.prevSlide();
       break;
     case "ArrowUp":
-      glide.nextSlide();
+      portret.nextSlide();
       break;
     case "ArrowLeft":
-      glide.prevSlide();
+      portret.prevSlide();
       break;
     case "ArrowRight":
-      glide.nextSlide();
+      portret.nextSlide();
       break;
     case "Enter":
-      glide.nextSlide();
+      portret.nextSlide();
       break;
     case "Escape":
-      glide.stopShow();
+      portret.stopShow();
       break;
     default:
       return;
@@ -578,14 +578,14 @@ document.onkeypress = function (e) {
 // On window resize:
 window.onresize = function(e) {
 
-    if ( glide.svg != null ) {
+    if ( portret.svg != null ) {
         // resize canvas
-        glide.svg.attr("width", window.innerWidth)
+        portret.svg.attr("width", window.innerWidth)
                  .attr("height", window.innerHeight);
 
         // resize pic
-        glide.calcImgPosAndDims(glide.img, function (posAndDims) {
-            glide.svg.selectAll("image")
+        portret.calcImgPosAndDims(portret.img, function (posAndDims) {
+            portret.svg.selectAll("image")
                    .attr("width", posAndDims.tWidth)
                    .attr("height", posAndDims.tHeight)
                    .attr("x", posAndDims.tx)
@@ -595,6 +595,6 @@ window.onresize = function(e) {
 };
 
 // On page load:
-d3.json(glide.param.picsJsonURI, function(data) {
-    glide.startShow(data);
+d3.json(portret.param.picsJsonURI, function(data) {
+    portret.startShow(data);
 });
