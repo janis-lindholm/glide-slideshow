@@ -21,10 +21,13 @@
   },
   "homepage": "https://github.com/janis-lindholm/glide-slideshow#readme",
   "dependencies": {
+    "axios": "^0.18.0",
     "bootstrap": "^4.3.1",
+    "connect": "^3.6.6",
     "d3": "^4.4.1",
     "exif-js": "^2.3.0",
     "express": "^4.16.4",
+    "serve-static": "^1.13.2",
     "vue": "^2.5.21"
   }
 }
