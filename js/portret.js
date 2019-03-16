@@ -4,13 +4,12 @@ var portret = portret || {};
  *** Slideshow Param Defaults ***
  *****************************************************************************/
 portret.param = {};
-portret.param.name = "Slideshow";
+portret.param.name = "slideshow";
 portret.param.showDuration = 5000;
 portret.param.animDuration = 2000;
 portret.param.autoForward = true;
 portret.param.bgColor = "#1e2426";
 portret.param.animation = "NONE";
-portret.param.picsJsonURI = "pics.json";   // pic catalog URI
 
 /******************************************************************************
  *** Internal Vars ***
@@ -41,7 +40,7 @@ portret.randKey = function(obj) {
 };
 
 /******************************************************************************
- *** Glide Functions ***
+ *** Portret Functions ***
  *****************************************************************************/
 portret.nextPic = function () {
     if (portret.i == portret.max) {
@@ -50,7 +49,7 @@ portret.nextPic = function () {
         portret.i++;
     }
 
-    var src = portret.dataset.pics[portret.i];
+    var src = "collections/" + portret.dataset.collection.name + "/" + portret.dataset.collection.pics[portret.i];
 
     var re = /\.(\w+)$/i;
     var found = src.match(re);
@@ -69,7 +68,18 @@ portret.prevPic = function () {
     } else {
         portret.i--;
     }
-    return [{"key": portret.i, "src": portret.dataset.pics[portret.i]}];
+
+    var src = "collections/" + portret.dataset.collection.name + "/" + portret.dataset.collection.pics[portret.i];
+
+    var re = /\.(\w+)$/i;
+    var found = src.match(re);
+    var filetype = "unknown";
+    if (Array.isArray(found)) {
+        filetype = (found[1]).toLowerCase();
+    }
+
+    console.log("src: " + src + ", filetype: " + filetype);
+    return [{"key": portret.i, "src": src, "filetype": filetype}];
 };
 
 portret.key = function (d) {
@@ -519,7 +529,7 @@ portret.registerAnimations = function () {
 
 portret.startShow = function (data) {
     portret.dataset = data;
-    portret.max = portret.dataset.pics.length - 1;
+    portret.max = portret.dataset.collection.pics.length - 1;
     portret.i = -1;
     portret.updateParams();
     portret.registerAnimations();
@@ -593,8 +603,3 @@ window.onresize = function(e) {
         });
     }
 };
-
-// On page load:
-d3.json(portret.param.picsJsonURI, function(data) {
-    portret.startShow(data);
-});

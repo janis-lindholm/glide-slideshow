@@ -3,7 +3,7 @@ var fs = require('fs');
 var path = require('path');
 
 var portret = {};
-portret.collectionPath = "./../collections/";
+portret.collectionPath = "./collections/";
 portret.fileTypes = [".jpg", ".jpeg", ".png", ".gif"];
 
 var app = express();
@@ -17,10 +17,12 @@ app.use(function(req, res, next) {
 });
 
 app.get('/collections', function (req, res, next) {
-   res.end(JSON.stringify(portret.getCollections()));
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(portret.getCollections()));
 });
 
 app.get('/collection/:name', function (req, res, next) {
+    res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(portret.getPics(req.params.name)));
 });
 
@@ -28,7 +30,7 @@ var server = app.listen(8081, function () {
    var host = server.address().address;
    var port = server.address().port;
    host = (host == "::") ? "127.0.0.1" : host;
-   console.log("Portret API listening at http://%s:%s", host, port)
+   console.log("Portret REST API listening at http://%s:%s", host, port)
 });
 
 /**
