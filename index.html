@@ -1,0 +1,113 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Portret Slideshow</title>
+</head>
+    <body>
+        <link rel="stylesheet" href="js/node_modules/bootstrap/dist/css/bootstrap.min.css">
+        <!-- <script src="js/node_modules/bootstrap/dist/js/bootstrap.min.js"></script> -->
+        <script src="js/node_modules/vue/dist/vue.js"></script>
+        <script src="js/node_modules/axios/dist/axios.min.js"></script>
+        <script src="js/node_modules/d3/build/d3.min.js"></script>
+        <script src="js/node_modules/exif-js/exif.js"></script>
+        <script src="js/portret.js"></script>
+
+        <div id="vm-root">
+            <div id="portret-ui" v-if="!showActive">
+                <div class="jumbotron">
+                    <h2>Portret Control Center</h2>
+                </div>
+
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12 col-md-4">
+                            <div class="alert" :class="[selectedShow ? 'alert-success' : 'alert-primary']">
+                                <span v-if="selectedShow"><span>Next Show: <strong><em>{{selectedShow}}</em></strong></span></span>
+                                <span v-else>Please click on a collection to select it.</span>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-8">
+                            <!-- preview section placeholder -->
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 col-md-4">
+                            <div id="collections" class="card">
+                                <div class="card-header"><strong>Collections</strong></div>
+                                <div v-if="!collections" class="card-body d-flex justify-content-center">
+                                    <div class="spinner-border text-info" role="status">
+                                        <span class="sr-only">Loading...</span>
+                                    </div>
+                                </div>
+                                <div v-if="collections.length>0" class="card-body">
+                                    <div class="list-group" v-for="col in collections">
+                                        <span class="list-group-item list-group-item-action" v-on:click="selectShow">
+                                            <span class="text-left">{{col.name}}</span>
+                                            <span class="badge badge-info text-right">{{col.count}}</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div v-else-if="collections.length==0" class="card-body d-flex justify-content-center">
+                                    <p>Seems you don't have any collections yet. Create some folders with pics below the <mark>collections</mark> folder to start.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-8">
+                            <div id="show-params" class="card">
+                                <div class="card-header"><strong>Slideshow Settings</strong></div>
+                                <div class="card-body form-group">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <label for="autoForward">Auto forward?</label>
+                                        </div>
+                                        <div class="col-7">
+                                            <input type="checkbox" id="autoForward" class="form-check-inline" v-model="settings.autoForward">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <label v-show="settings.autoForward" for="showDuration">How long a picture shall be shown:</label>
+                                        </div>
+                                        <div class="col-7">
+                                            <input v-show="settings.autoForward" type="number" id="showDuration" class="form-control" v-model="settings.showDuration" placeholder="5 s">
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-5">
+                                            <label for="animation">Please choose an animation:</label>
+                                        </div>
+                                        <div class="col-7">
+                                            <select id="animation" class="form-control" v-model="settings.animation">
+                                                <option value="NONE">None</option>
+                                                <option value="RANDOM">Random</option>
+                                                <option value="ZOOM_IN">Zoom in</option>
+                                                <option value="SLIDE_RIGHT">Slide to right</option>
+                                                <option value="SLIDE_TOP">Slide from top</option>
+                                                <option value="MEMORY">Chess</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mt-2">
+                                        <div class="col-5">
+                                            <label v-show="settings.animation!='NONE'" for="animDuration">How long an animation shall take:</label>
+                                        </div>
+                                        <div class="col-7">
+                                            <input v-show="settings.animation!='NONE'" type="number" id="animDuration" class="form-control" v-model="settings.animDuration" placeholder="2 s">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-auto">
+                                    <button type="button" id="startShow" class="btn btn-primary" :disabled="!selectedShow ? 'disabled' : false" v-on:click="startShow">Start Show</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <script src="js/portret-ui.js"></script>
+</html>
