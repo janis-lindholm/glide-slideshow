@@ -19,6 +19,7 @@ portret.lastAnimation = null;
 portret.animIntervalId = null;
 portret.cancelAnimation = null;
 portret.animations = {};
+portret.dataset = undefined;
 
 /******************************************************************************
  *** Helper Functions ***
@@ -528,13 +529,17 @@ portret.registerAnimations = function () {
 };
 
 portret.startShow = function (data) {
-    portret.dataset = data;
-    portret.max = portret.dataset.collection.pics.length - 1;
-    portret.i = -1;
-    portret.updateParams();
-    portret.registerAnimations();
-    portret.setupCanvas();
-    portret.nextSlide();
+    if (data != undefined) {
+        portret.dataset = data;
+        portret.max = portret.dataset.collection.pics.length - 1;
+        portret.i = -1;
+        portret.updateParams();
+        portret.registerAnimations();
+        portret.setupCanvas();
+        portret.nextSlide();
+    } else {
+        console.log("Missing show data.");
+    }
 };
 
 portret.stopShow = function () {
@@ -549,7 +554,9 @@ portret.stopShow = function () {
  *****************************************************************************/
  // On click on body:
 d3.select("body").on("click", function(e) {
-    portret.nextSlide();
+    if (portret.dataset != undefined) {
+        portret.nextSlide();
+    }
 });
 
 // On key press:
