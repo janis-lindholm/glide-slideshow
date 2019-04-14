@@ -1,6 +1,5 @@
+.idea
 js/node_modules
-pics.json
-pics/*.jpg
-pics/*.png
-pics/*.gif
+collections/*
+!collections/README.md
 
